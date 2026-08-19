@@ -1,0 +1,262 @@
+version: 2
+
+sources:
+  - name: workday_financial_management
+    schema: "{{ var('workday_financial_management_schema', 'workday_financial_management') }}"
+    database: "{% if target.type != 'spark' %}{{ var('workday_financial_management_database', target.database) }}{% endif %}"
+
+    tables:
+      - name: journal_entry
+        identifier: "{{ var('workday_financial_management_journal_entry_identifier', 'journal_entry') }}"
+        description: >
+          The header of an accounting journal entry. One row per journal entry, carrying the
+          accounting date, status, source system, ledger, and company that the entry posts to.
+          Individual debit and credit amounts live on journal_entry_line.
+        columns:
+          - name: id
+            description: "{{ doc('journal_entry_id') }}"
+          - name: accounting_date
+            description: "{{ doc('accounting_date') }}"
+          - name: transaction_date
+            description: "{{ doc('transaction_date') }}"
+          - name: creation_date
+            description: "{{ doc('created_at') }}"
+          - name: journal_number
+            description: "{{ doc('journal_number') }}"
+          - name: journal_sequence_number
+            description: "{{ doc('journal_sequence_number') }}"
+          - name: journal_entry_status
+            description: "{{ doc('journal_entry_status') }}"
+          - name: book_code
+            description: "{{ doc('book_code') }}"
+          - name: memo
+            description: "{{ doc('journal_entry_memo') }}"
+          - name: total_ledger_debits
+            description: "{{ doc('total_ledger_debits') }}"
+          - name: total_ledger_credits
+            description: "{{ doc('total_ledger_credits') }}"
+          - name: external_reference_id
+            description: "{{ doc('external_reference_id') }}"
+          - name: company_id
+            description: "{{ doc('company_id') }}"
+          - name: ledger_id
+            description: "{{ doc('ledger_id') }}"
+          - name: journal_source_id
+            description: "{{ doc('journal_source_id') }}"
+          - name: currency_id
+            description: "{{ doc('currency_id') }}"
+          - name: ledger_period_id
+            description: "{{ doc('ledger_period_id') }}"
+          - name: cancel_reverses_journal_entry_id
+            description: "{{ doc('cancel_reverses_journal_entry_id') }}"
+          - name: cancel_reversed_by_journal_entry_id
+            description: "{{ doc('cancel_reversed_by_journal_entry_id') }}"
+          - name: functional_reverses_journal_entry_id
+            description: "{{ doc('functional_reverses_journal_entry_id') }}"
+          - name: functional_reversed_by_journal_entry_id
+            description: "{{ doc('functional_reversed_by_journal_entry_id') }}"
+          - name: _fivetran_synced
+            description: "{{ doc('fivetran_synced') }}"
+
+      - name: journal_entry_line
+        identifier: "{{ var('workday_financial_management_journal_entry_line_identifier', 'journal_entry_line') }}"
+        description: >
+          The individual debit and credit lines of a journal entry, and the transactional grain of
+          the general ledger. One row per line. Workday stores debits and credits as explicit
+          columns in both transaction and ledger currency, so no double-entry synthesis is needed.
+          Keyed by journal_entry_id plus index.
+        columns:
+          - name: journal_entry_id
+            description: "{{ doc('journal_entry_id') }}"
+          - name: index
+            description: "{{ doc('journal_entry_line_index') }}"
+          - name: line_order
+            description: "{{ doc('line_order') }}"
+          - name: journal_line_number
+            description: "{{ doc('journal_line_number') }}"
+          - name: debit_amount
+            description: "{{ doc('debit_amount') }}"
+          - name: credit_amount
+            description: "{{ doc('credit_amount') }}"
+          - name: ledger_debit_amount
+            description: "{{ doc('ledger_debit_amount') }}"
+          - name: ledger_credit_amount
+            description: "{{ doc('ledger_credit_amount') }}"
+          - name: currency_rate
+            description: "{{ doc('currency_rate') }}"
+          - name: currency_id
+            description: "{{ doc('currency_id') }}"
+          - name: ledger_account_id
+            description: "{{ doc('ledger_account_id') }}"
+          - name: ledger_account_code
+            description: "{{ doc('ledger_account_code') }}"
+          - name: account_set_name
+            description: "{{ doc('account_set_name') }}"
+          - name: line_company_id
+            description: "{{ doc('line_company_id') }}"
+          - name: budget_date
+            description: "{{ doc('budget_date') }}"
+          - name: memo
+            description: "{{ doc('journal_entry_line_memo') }}"
+          - name: quantity
+            description: "{{ doc('quantity') }}"
+          - name: exclude_from_spend_report
+            description: "{{ doc('exclude_from_spend_report') }}"
+          - name: _fivetran_synced
+            description: "{{ doc('fivetran_synced') }}"
+
+      - name: journal_entry_line_worktag
+        identifier: "{{ var('workday_financial_management_journal_entry_line_worktag_identifier', 'journal_entry_line_worktag') }}"
+        description: >
+          Bridge table linking journal entry lines to the worktags tagged on them. Many-to-many —
+          a single line can carry several worktags of different types. The bridge holds only
+          identifiers, so resolving a worktag's type or name requires joining to worktag.
+        columns:
+          - name: journal_entry_id
+            description: "{{ doc('journal_entry_id') }}"
+          - name: journal_entry_line_index
+            description: "{{ doc('journal_entry_line_index') }}"
+          - name: worktag_id
+            description: "{{ doc('worktag_id') }}"
+          - name: _fivetran_synced
+            description: "{{ doc('fivetran_synced') }}"
+
+      - name: worktag
+        identifier: "{{ var('workday_financial_management_worktag_identifier', 'worktag') }}"
+        description: >
+          Workday's flexible accounting dimensions. A worktag is a typed tag such as a cost center,
+          fund, grant, program, or project that can be applied to transactions to carry dimensional
+          context without dedicated columns.
+        columns:
+          - name: id
+            description: "{{ doc('worktag_id') }}"
+          - name: attribute
+            description: "{{ doc('worktag_type') }}"
+          - name: descriptor
+            description: "{{ doc('worktag_name') }}"
+          - name: value
+            description: "{{ doc('worktag_value') }}"
+          - name: _fivetran_synced
+            description: "{{ doc('fivetran_synced') }}"
+
+      - name: custom_worktag
+        identifier: "{{ var('workday_financial_management_custom_worktag_identifier', 'custom_worktag') }}"
+        description: >
+          Tenant-defined worktag types, as distinct from the worktag types Workday delivers. Used
+          alongside worktag to resolve the full set of dimensions a customer tags transactions with.
+        columns:
+          - name: id
+            description: "{{ doc('custom_worktag_id') }}"
+          - name: worktag_code
+            description: "{{ doc('worktag_code') }}"
+          - name: configuration_code
+            description: "{{ doc('configuration_code') }}"
+          - name: value
+            description: "{{ doc('custom_worktag_value') }}"
+          - name: inactive
+            description: "{{ doc('is_inactive') }}"
+          - name: _fivetran_synced
+            description: "{{ doc('fivetran_synced') }}"
+
+      - name: ledger
+        identifier: "{{ var('workday_financial_management_ledger_identifier', 'ledger') }}"
+        description: >
+          The set of books a journal entry posts to. A company may maintain several ledgers, for
+          example an actuals ledger alongside separate budget or statistical ledgers.
+        columns:
+          - name: id
+            description: "{{ doc('ledger_id') }}"
+          - name: ledger_code
+            description: "{{ doc('ledger_code') }}"
+          - name: ledger_type
+            description: "{{ doc('ledger_type') }}"
+          - name: company_id
+            description: "{{ doc('company_id') }}"
+          - name: _fivetran_synced
+            description: "{{ doc('fivetran_synced') }}"
+
+      - name: ledger_account
+        identifier: "{{ var('workday_financial_management_ledger_account_identifier', 'ledger_account') }}"
+        description: >
+          The chart of accounts. One row per ledger account. Note that the account code is not
+          stored here — it is denormalized onto journal_entry_line instead.
+        columns:
+          - name: id
+            description: "{{ doc('ledger_account_id') }}"
+          - name: name
+            description: "{{ doc('ledger_account_name') }}"
+          - name: type
+            description: "{{ doc('ledger_account_type') }}"
+          - name: account_set_id
+            description: "{{ doc('account_set_id') }}"
+          - name: retired
+            description: "{{ doc('is_retired') }}"
+          - name: _fivetran_synced
+            description: "{{ doc('fivetran_synced') }}"
+
+      - name: journal_source
+        identifier: "{{ var('workday_financial_management_journal_source_identifier', 'journal_source') }}"
+        description: >
+          The originating system or business process that produced a journal entry, for example
+          Manual Journal, Supplier Invoice, or Payroll. Used to attribute general ledger activity
+          back to the process that created it.
+        columns:
+          - name: id
+            description: "{{ doc('journal_source_id') }}"
+          - name: journal_source_id
+            description: "{{ doc('journal_source_reference_id') }}"
+          - name: journal_source_name
+            description: "{{ doc('journal_source_name') }}"
+          - name: _fivetran_synced
+            description: "{{ doc('fivetran_synced') }}"
+
+      - name: company
+        identifier: "{{ var('workday_financial_management_company_identifier', 'company') }}"
+        description: >
+          The legal entities that journal entries post to. Workday models companies as
+          organizations, so identifying fields carry an organization prefix. This table also holds
+          the accounting sign-convention settings that govern how debits and credits are stored.
+        columns:
+          - name: id
+            description: "{{ doc('company_id') }}"
+          - name: organization_name
+            description: "{{ doc('company_name') }}"
+          - name: organization_code
+            description: "{{ doc('company_code') }}"
+          - name: organization_active
+            description: "{{ doc('is_active') }}"
+          - name: currency_id
+            description: "{{ doc('currency_id') }}"
+          - name: account_set_id
+            description: "{{ doc('account_set_id') }}"
+          - name: fiscal_schedule_code
+            description: "{{ doc('fiscal_schedule_code') }}"
+          - name: default_reporting_book_code
+            description: "{{ doc('default_reporting_book_code') }}"
+          - name: reverse_debit_credit
+            description: "{{ doc('is_debit_credit_reversed') }}"
+          - name: keep_debit_credit_and_reverse_sign
+            description: "{{ doc('is_sign_reversed') }}"
+          - name: _fivetran_synced
+            description: "{{ doc('fivetran_synced') }}"
+
+      - name: currency
+        identifier: "{{ var('workday_financial_management_currency_identifier', 'currency') }}"
+        description: >
+          Currencies referenced by journal entries and their lines. Workday records journal amounts
+          in both a transaction currency and the ledger's functional currency.
+        columns:
+          - name: id
+            description: "{{ doc('currency_id') }}"
+          - name: currency_code
+            description: "{{ doc('currency_code') }}"
+          - name: description
+            description: "{{ doc('currency_name') }}"
+          - name: numeric_code
+            description: "{{ doc('currency_numeric_code') }}"
+          - name: symbol
+            description: "{{ doc('currency_symbol') }}"
+          - name: precision
+            description: "{{ doc('currency_precision') }}"
+          - name: _fivetran_synced
+            description: "{{ doc('fivetran_synced') }}"

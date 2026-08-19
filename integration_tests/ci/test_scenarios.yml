@@ -1,0 +1,25 @@
+# Only set if not using default adapter ranges
+# dbt_adapter_versions:
+#   snowflake: ">=1.3.0,<2.0.0"
+#   bigquery: ">=1.3.0,<2.0.0"
+#   postgres: ">=1.3.0,<2.0.0"
+#   redshift: ">=1.3.0,<2.0.0"
+#   databricks: ">=1.6.0,<2.0.0"
+
+schema_variable_name: "workday_financial_management_schema"
+
+include_databricks_sql: false
+include_sqlserver: false
+include_dbt_compile: true
+
+test_scenarios:
+  - name: "Default"
+    vars: {}
+    include_incremental: false
+
+  # Exercises the disabled path: the three worktag staging models and the pivot are turned off,
+  # and the general ledger builds without its worktag columns.
+  - name: "Worktags disabled"
+    vars:
+      workday_financial_management_using_worktags: false
+    include_incremental: false

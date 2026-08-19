@@ -1,0 +1,4 @@
+id,organization_name,organization_code,organization_active,currency_id,account_set_id,fiscal_schedule_code,default_reporting_book_code,reverse_debit_credit,keep_debit_credit_and_reverse_sign,_fivetran_synced,_fivetran_deleted
+db7b5a3d9b8542878606663ead3795bc,Fictional Dental Co.,FDC-001,true,9a1803a1be12ee7893d96a53cf6c0a01,763780b51ea686ce347aee641be71c02,CAL-MONTHLY,GAAP_Accounting_Only,false,false,2026-01-15T09:00:00Z,false
+7cb681e1b91b67ab700ca599416e43d3,FDC Riverside,FDC-002,true,9a1803a1be12ee7893d96a53cf6c0a01,763780b51ea686ce347aee641be71c02,CAL-MONTHLY,GAAP_Accounting_Only,false,true,2026-01-15T09:00:00Z,false
+c0ce1c9391e3ca8b3a4f9329acaa2a22,Bright by FDC,FDC-003,true,9a1803a1be12ee7893d96a53cf6c0a01,763780b51ea686ce347aee641be71c02,CAL-MONTHLY,GAAP_Accounting_Only,true,false,2026-01-15T09:00:00Z,false

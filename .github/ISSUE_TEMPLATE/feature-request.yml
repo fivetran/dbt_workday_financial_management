@@ -1,0 +1,53 @@
+name: Feature Request
+description: Suggest an idea or enhancement for this dbt package
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to submit a feature request! Please search existing issues before submitting a new one.
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the feature
+      description: A clear and concise description of the feature or enhancement you'd like to see.
+    validations:
+      required: true
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Why is this feature needed?
+      description: Explain the use case or problem this feature would solve.
+    validations:
+      required: true
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Proposed implementation
+      description: If you have a specific implementation in mind, describe it here with any relevant SQL or YAML examples.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe any alternative solutions or features you've considered.
+    validations:
+      required: false
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Are you interested in contributing this feature?
+      options:
+        - "Yes, I'd like to open a PR"
+        - "Yes, but I'd need guidance"
+        - "No"
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Add any other context, screenshots, or examples here.
+    validations:
+      required: false
