@@ -118,9 +118,9 @@ vars:
 The staging models are never filtered, so `stg_workday_financial_management__journal_entry` always carries the complete journal history.
 
 #### Configure worktag columns
-This package resolves your Workday worktags into one column per worktag type on `workday_financial_management__general_ledger`. Worktag types you do not name explicitly are left out, so the general ledger does not grow a column for every worktag type your tenant happens to define.
+This package resolves your Workday worktags into one column per worktag type on `workday_financial_management__general_ledger`. Worktag types you do not name explicitly are left out.
 
-Six delivered worktag types are always included, because they are the ones that reach general ledger journal lines in most tenants:
+Six delivered worktag types are always included:
 
 | **worktag type** | **column** |
 | ---------------- | ---------- |
@@ -131,7 +131,7 @@ Six delivered worktag types are always included, because they are the ones that 
 | `Spend_Category_ID` | `spend_category_id` |
 | `Revenue_Category_ID` | `revenue_category_id` |
 
-Note that the connector reports worktag types using Workday's reference-ID naming rather than the display names in Workday's worktag documentation. The type is `Cost_Center_Reference_ID`, not `Cost Center`. The suffix is not always `_Reference_ID` — spend and revenue category arrive as `Spend_Category_ID` and `Revenue_Category_ID` — so check your own `worktag` table's `attribute` column before adding a type. A type your tenant does not use still produces a column; it is simply null.
+Note that the connector reports worktag types using Workday's -ID naming rather than the display names in Workday's worktag documentation, so check your own `worktag` table's `attribute` column before adding a type. A type your organization does not use still produces a column; it is simply null.
 
 To add worktag types of your own, add the following configuration to your root `dbt_project.yml` file:
 
@@ -144,8 +144,8 @@ Each value must match either the `attribute` column of your `worktag` table or t
 
 Two notes on the resulting columns:
 
-- A journal line often carries several worktags of the same type, because they are different allocations rather than duplicates. The column holds every value, joined by ` | `. Treat it as something to read, not something to parse.
-- If a worktag type shares a name with a column the model already produces, we prefix the worktag column with `pivoted_`.
+- A journal line can carry multiple worktags of the same type, with different values. The column holds every value, joined by ` | `.
+- If a custom worktag type shares a name with a column the model already produces, we prefix the worktag column with `pivoted_`.
 
 #### Change the build schema
 By default, this package builds the Workday Financial Management staging models within a schema titled (<target_schema> + `_workday_financial_management_staging`), the intermediate models within (<target_schema> + `_workday_financial_management_intermediate`), and the final models within (<target_schema> + `_workday_financial_management_reports`) in your destination. If this is not where you would like your data to be written, add the following configuration to your root `dbt_project.yml` file:

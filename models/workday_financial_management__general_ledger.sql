@@ -5,10 +5,6 @@
 {%- set worktag_types = workday_financial_management.resolve_worktag_types() if using_worktags else [] %}
 
 -- One row per journal entry line, per source relation.
---
--- Keep the closing tag of the block above non-stripping (no dash before the closing delimiter).
--- A stripping close would pull this comment and the `with` below onto a single line, commenting
--- out the CTE opener and producing a syntax error pointing far away from the real cause.
 
 with journal_entry_line as (
 
@@ -17,11 +13,8 @@ with journal_entry_line as (
 
 ),
 
--- Only posted journal entries reach the general ledger. Workday keeps canceled, errored,
--- pro-forma, unposted, created and reserved entries in the same table, and summing them produces
--- balances that do not tie: in the tenant this was validated against, posted lines netted to
--- exactly zero while canceled and errored ones contributed 404,744 of phantom movement and every
--- unbalanced entry was one of those two. Read the staging models for the full journal history.
+-- Only posted journal entries reach the general ledger. 
+
 journal_entry as (
 
     select *
@@ -51,14 +44,6 @@ ledger_account as (
 
 ),
 
--- ledger_account's primary key IS the account code -- Workday does not give this table the hash
--- that journal_entry_line.ledger_account_id carries, so the line joins on its code instead.
---
--- A code is only unique within an account set, and the connector syncs no account_set table, so
--- there is no key that would scope the join to the line's set. Where a code appears in more than
--- one set the accounts are genuinely different -- 1550 is "Investment in Joint Ventures" in one
--- and "Furniture, Fixtures & Equipment" in another -- so those rows are held back and the
--- account columns come through null rather than guessed. See DECISIONLOG.
 ledger_account_code_counts as (
 
     select
@@ -97,8 +82,6 @@ currency as (
 
 ),
 
--- The ledger's own company, which is not always the journal header's: on an intercompany journal
--- the header company is the payer. Its currency is the one the ledger_* amounts are stated in.
 ledger_company as (
 
     select *
@@ -179,9 +162,8 @@ joined as (
         company.is_sign_reversed
 
         {% if using_worktags and worktag_types | length > 0 %}
-            -- Every non-worktag column produced by this CTE. A tenant is free to name a worktag
-            -- type after one of them, so any collision gets a pivoted_ prefix rather than
-            -- silently producing a duplicate column name.
+            -- Every non-worktag column produced by this CTE. A worktag type can be named  after one of them, so any collision gets a pivoted_ prefix rather than silently producing a duplicate column name.
+            
             {%- set line_columns = ['source_relation', 'general_ledger_id', 'journal_entry_id', 'journal_entry_line_index', 'budget_date', 'line_company_id', 'ledger_account_id', 'ledger_account_code', 'account_set_name', 'currency_id', 'currency_rate', 'debit_amount', 'credit_amount', 'net_amount', 'ledger_debit_amount', 'ledger_credit_amount', 'ledger_net_amount', 'quantity', 'journal_line_number', 'line_order', 'journal_entry_line_memo', 'exclude_from_spend_report'] -%}
             {%- set header_columns = ['journal_number', 'journal_sequence_number', 'journal_entry_status', 'book_code', 'accounting_date', 'transaction_date', 'created_at', 'company_id', 'ledger_id', 'journal_source_id', 'journal_entry_memo', 'external_reference_id', 'cancel_reverses_journal_entry_id', 'cancel_reversed_by_journal_entry_id', 'functional_reverses_journal_entry_id', 'functional_reversed_by_journal_entry_id'] -%}
             {%- set dimension_columns = ['company_name', 'company_code', 'ledger_code', 'ledger_type', 'ledger_account_name', 'ledger_account_type', 'account_set_id', 'journal_source_name', 'currency_code', 'ledger_currency_id', 'ledger_currency_code', 'is_debit_credit_reversed', 'is_sign_reversed'] -%}

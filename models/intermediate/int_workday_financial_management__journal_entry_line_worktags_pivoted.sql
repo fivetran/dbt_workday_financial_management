@@ -2,13 +2,7 @@
 
 {%- set worktag_types = workday_financial_management.resolve_worktag_types() %}
 
--- One row per journal entry line that carries at least one configured worktag, with one column per
--- configured worktag type. Lines with none are absent; the general ledger left joins this model, so
--- they come through null.
---
--- Keep the closing tag of the block above non-stripping (no dash before the closing delimiter).
--- A stripping close would pull this comment and the `with` below onto a single line, commenting
--- out the CTE opener and producing a syntax error pointing far away from the real cause.
+-- One row per journal entry line that carries at least one configured worktag, with one column per configured worktag type.
 
 with journal_entry_line_worktag as (
 
@@ -17,13 +11,7 @@ with journal_entry_line_worktag as (
 
 ),
 
--- Workday splits worktags across two dimensions, and the bridge's worktag_id resolves against
--- either one, so they are unioned into a single lookup. `worktag` holds the delivered types --
--- cost center, region, spend category and the rest -- keyed on attribute. `custom_worktag` holds
--- the tenant-defined ones, where configuration_code plays the part attribute plays above.
---
--- Inactive custom worktags are kept deliberately. A worktag retired last year is still the correct
--- label for the journal lines that were posted under it.
+-- Workday splits worktags across two dimensions, and the bridge's worktag_id resolves against either one, so they are unioned into a single lookup.
 worktag as (
 
     select
@@ -44,9 +32,6 @@ worktag as (
 
 ),
 
--- The join is inner on purpose. Restricting to the configured types here rather than after the
--- fact is what keeps this model off the full bridge table, and a where clause applied to the right
--- side of a left join would not filter anything at all.
 line_worktags as (
 
     select
@@ -62,14 +47,17 @@ line_worktags as (
         and journal_entry_line_worktag.source_relation = worktag.source_relation
 
     {% if worktag_types | length > 0 -%}
-    where lower(worktag.worktag_type) in ({% for worktag in worktag_types %}'{{ worktag.worktag_type | lower | replace("'", "''") }}'{% if not loop.last %}, {% endif %}{% endfor %})
+    where lower(worktag.worktag_type) in (
+        {% for worktag in worktag_types %}
+        '{{ worktag.worktag_type | lower | replace("'", "''") }}'
+        {% if not loop.last %},{% endif %}
+        {% endfor %}
+    )
     {%- endif %}
 
 ),
 
--- A line routinely carries several worktags of the same type, and they are different allocations
--- rather than duplicates, so every value is kept and joined rather than one being picked. The
--- delimiter is ` | ` because a worktag value may itself contain a comma. See DECISIONLOG.
+-- A single journal line can have multiple worktags of the same type with different values.
 final as (
 
     select

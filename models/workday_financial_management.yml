@@ -5,40 +5,20 @@ models:
     description: >
       Transaction-level general ledger detail. One row per journal entry line, per source relation.
       Journal header, company, ledger, ledger account, journal source, and currency context are
-      denormalized onto every line so you do not have to join them back yourself.
-
-      Only posted journal entries are included. Canceled, errored, pro-forma, unposted, created,
-      and reserved entries are excluded, because summing them produces balances that do not tie.
-      Use the staging models for the complete journal history, or widen
-      workday_financial_management__posted_statuses. See DECISIONLOG.
+      denormalized onto every line. Only posted journal entries are included.
 
       Workday supplies debits and credits natively, so both the debit/credit pair and a signed
       net_amount are exposed. Note that negative debit and credit amounts are legitimate: a company
       configured for "Keep Debit/Credit and Reverse Sign" records its reversals as a negative
       amount in the original column rather than moving it to the opposite column.
 
-      This model also carries one column per configured worktag type, resolved from both the
-      worktag and custom_worktag dimensions. Six are always present, named for the worktag types
-      the connector reports in Workday's reference-ID form: organization_reference_id,
-      custom_organization_reference_id, cost_center_reference_id, region_reference_id,
-      spend_category_id and revenue_category_id. They are null in tenants that do not use them.
-      Add more by name with workday_financial_management__worktag_types; each becomes its own
-      column and is therefore not documented below. Any worktag type whose name collides with a
-      column documented here is prefixed with pivoted_. Set
-      workday_financial_management_using_worktags to false to drop all of them.
-
-      A journal line often carries several worktags of one type, which are different allocations
-      rather than duplicates, so each worktag column holds every value joined by " | ". Read those
-      columns rather than parsing them. See DECISIONLOG.
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
       - name: general_ledger_id
         description: >
           Surrogate key derived from journal_entry_id, journal_entry_line_index, and
-          source_relation. Uniqueness here is also the integrity check on every dimension join in
-          this model — a duplicate identifier in company, ledger, ledger_account, journal_source,
-          or currency would fan the line out and break this test.
+          source_relation.
         tests:
           - not_null
           - unique
@@ -111,17 +91,11 @@ models:
         description: "{{ doc('currency_code') }}"
       - name: ledger_currency_id
         description: >
-          Identifier of the ledger (functional) currency the ledger_* amount columns are stated in.
-          Read from the company that owns the ledger, which on an intercompany journal is not the
-          header company named by company_id. Null where the ledger is missing from the source.
-          See DECISIONLOG.
+          Identifier of the ledger (functional) currency the ledger_* amount columns are stated in. Null where the ledger is missing from the source.
       - name: ledger_currency_code
         description: >
-          ISO code of the ledger (functional) currency. This is the unit for ledger_debit_amount,
-          ledger_credit_amount, and ledger_net_amount. Use currency_code instead for debit_amount,
-          credit_amount, and net_amount.
-
-          Null where the ledger is missing from the source. See DECISIONLOG.
+          ISO code of the ledger (functional) currency. Unit for ledger_debit_amount,
+          ledger_credit_amount, and ledger_net_amount. Null where the ledger is missing from the source.
       - name: currency_rate
         description: "{{ doc('currency_rate') }}"
       - name: debit_amount
@@ -173,23 +147,6 @@ models:
       Monthly general ledger rollup. One row per company, ledger account, and calendar month, per
       source relation. Months with no journal activity are still present, carrying the last known
       balance forward.
-
-      Built from posted journal entries only, inheriting that filter from
-      workday_financial_management__general_ledger.
-
-      Every amount here is stated in the ledger (functional) currency named by
-      ledger_currency_code. Transaction-currency amounts are deliberately not rolled up: a company
-      can post in several transaction currencies, and this grain carries no currency, so summing
-      them would add one currency to another. Use workday_financial_management__general_ledger if
-      you need transaction-currency detail.
-
-      Periods are calendar months. The connector syncs no fiscal calendar table, so a company on a
-      non-calendar fiscal year cannot have its own periods reflected here.
-
-      Cumulative balances are produced for every account, not only balance sheet accounts. Workday
-      exposes an account type but no account class, so there is no routing key that would let the
-      model restrict the carry-forward. Treat the balance columns as meaningful only for accounts
-      you know to be balance sheet accounts.
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -216,17 +173,17 @@ models:
         description: >
           {{ doc('ledger_account_type') }}
 
-          Null where the account code appears in more than one account set. See DECISIONLOG.
+          Null where the account code appears in more than one account set.
       - name: ledger_currency_id
         description: >
           Identifier of the ledger (functional) currency every amount in this model is stated in.
           Read from the company that owns the ledger. Null where the ledger is missing from the
-          source. See DECISIONLOG.
+          source.
       - name: ledger_currency_code
         description: >
           ISO code of the ledger (functional) currency, and the unit for period_net_change,
           period_beginning_balance, and period_ending_balance. Null where the ledger is missing
-          from the source, in which case those rows group together. See DECISIONLOG.
+          from the source, in which case those rows group together.
       - name: date_year
         description: First day of the calendar year the period falls in.
       - name: period_first_day

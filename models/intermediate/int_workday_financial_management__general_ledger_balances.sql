@@ -1,15 +1,5 @@
--- Rolls journal activity up to one row per company, ledger account, and calendar month, then
--- carries the last known balance forward across months with no activity.
---
--- Balances are stated in the ledger (functional) currency only. A company may post journal lines
--- in several transaction currencies, and this grain has no currency in it, so summing the
--- transaction-currency amounts here would add one currency to another. The ledger amounts are
--- already converted to the company's single functional currency, which is what a period rollup
--- should report. See DECISIONLOG.
---
--- Cumulative balances are produced for every account, not just balance sheet accounts. Workday
--- exposes ledger_account.type but no account class, and the account hierarchy that would supply
--- one is not in scope for this phase, so there is no routing key to restrict the carry-forward.
+-- Rolls journal activity up to one row per company, ledger account, and calendar month, then carries the last known balance forward across months with no activity.
+-- Balances are stated in the ledger (functional) currency only. 
 
 with general_ledger as (
 

@@ -4,25 +4,22 @@ config-version: 2
 profile: 'integration_tests'
 
 vars:
-  workday_financial_management_database: singular-vector-135519
-  workday_financial_management_schema: wfm_initial_sync
-  # Exercises both halves of the pivot beyond the hardcoded defaults. Location_ID and Project_ID
-  # come from the worktag dimension in both the seeds and the source; Campaign and
-  # Line_of_Business are the seeds' custom_worktag codes, Flow_Code and Worktag_Custom_10 the
-  # source's. A type absent from whichever is in use just yields a null column.
-  workday_financial_management__worktag_types: ['Company_Reference_ID', 'Location_ID', 'Project_ID', 'Campaign', 'Line_of_Business', 'Flow_Code', 'Worktag_Custom_11']
-  # workday_financial_management:
-  #   workday_financial_management_schema: zz_dbt_savage
-  #   workday_financial_management_journal_entry_identifier: "journal_entry"
-  #   workday_financial_management_journal_entry_line_identifier: "journal_entry_line"
-  #   workday_financial_management_journal_entry_line_worktag_identifier: "journal_entry_line_worktag"
-  #   workday_financial_management_worktag_identifier: "worktag"
-  #   workday_financial_management_custom_worktag_identifier: "custom_worktag"
-  #   workday_financial_management_ledger_identifier: "ledger"
-  #   workday_financial_management_ledger_account_identifier: "ledger_account"
-  #   workday_financial_management_journal_source_identifier: "journal_source"
-  #   workday_financial_management_company_identifier: "company"
-  #   workday_financial_management_currency_identifier: "currency"
+  workday_financial_management:
+
+    workday_financial_management_schema: workday_financial_management_integration_tests
+
+    workday_financial_management__worktag_types: ['Company_Reference_ID', 'Location_ID', 'Project_ID', 'Campaign', 'Line_of_Business']
+
+    workday_financial_management_journal_entry_identifier: "journal_entry"
+    workday_financial_management_journal_entry_line_identifier: "journal_entry_line"
+    workday_financial_management_journal_entry_line_worktag_identifier: "journal_entry_line_worktag"
+    workday_financial_management_worktag_identifier: "worktag"
+    workday_financial_management_custom_worktag_identifier: "custom_worktag"
+    workday_financial_management_ledger_identifier: "ledger"
+    workday_financial_management_ledger_account_identifier: "ledger_account"
+    workday_financial_management_journal_source_identifier: "journal_source"
+    workday_financial_management_company_identifier: "company"
+    workday_financial_management_currency_identifier: "currency"
 
 models:
   +persist_docs:

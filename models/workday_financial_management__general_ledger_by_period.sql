@@ -1,5 +1,4 @@
 -- One row per company, ledger account, and calendar month, per source relation.
---
 -- All amounts are stated in the ledger (functional) currency named by ledger_currency_code.
 
 with general_ledger_balances as (

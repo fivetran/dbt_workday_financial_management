@@ -1,11 +1,8 @@
 -- depends_on: {{ ref('workday_financial_management__general_ledger') }}
 
--- A monthly spine crossed with every company and ledger account that has activity, so that
--- downstream period balances are densified across months with no journal activity.
---
--- Periods are calendar months. The connector syncs no fiscal calendar table -- journal_entry
--- carries a ledger_period_id with nothing to join to, and company.fiscal_schedule_code is a bare
--- code that resolves to nothing -- so a calendar month is the only period grain available.
+-- A monthly spine crossed with every company and ledger account that has activity, so that downstream period balances are densified across months with no journal activity.
+
+-- Periods are calendar months. The connector syncs no fiscal calendar table 
 
 with spine as (
 

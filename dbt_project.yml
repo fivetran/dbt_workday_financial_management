@@ -22,7 +22,7 @@ vars:
   workday_financial_management_sources: []
 
   # Journal entry statuses that count as posted. Only these reach the end models -- canceled and
-  # errored entries otherwise contaminate every balance. Widen it only if your tenant uses
+  # errored entries otherwise contaminate every balance. Widen it only if you use
   # different status values; the staging models always carry the full journal history.
   workday_financial_management__posted_statuses: ['POSTED']
 
@@ -34,7 +34,5 @@ vars:
   # Worktag types to add as columns on the general ledger, on top of the six delivered types the
   # package always includes. Values must match your worktag table's attribute -- or, for custom
   # worktags, your custom_worktag table's configuration_code -- and are matched case-insensitively.
-  # The connector reports these in Workday's reference-ID form, so 'Fund_Reference_ID' rather than
-  # 'Fund'. The column is the value slugified: fund_reference_id.
   # See the macro resolve_worktag_types for the types included by default.
   workday_financial_management__worktag_types: []
