@@ -23,3 +23,16 @@ test_scenarios:
     vars:
       workday_financial_management_using_worktags: false
     include_incremental: false
+
+  - name: "MDLS"
+    vars:
+      fivetran_using_source_casing: true
+    include_incremental: false
+    include_dbt_seed: true
+
+  # Seed data carries one UNPOSTED entry alongside 169 POSTED ones, so widening this actually
+  # changes the general ledger's row count under CI.
+  - name: "Posted statuses widened"
+    vars:
+      workday_financial_management__posted_statuses: ['POSTED', 'UNPOSTED']
+    include_incremental: false
