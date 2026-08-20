@@ -101,7 +101,7 @@ ledger_currency as (
 pivoted_worktags as (
 
     select *
-    from {{ ref('int_workday_financial_management__journal_entry_line_worktags_pivoted') }}
+    from {{ ref('int_workday_financial_management__worktags_pivoted') }}
 {% endif %}
 
 ),

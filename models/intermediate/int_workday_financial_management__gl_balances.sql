@@ -11,7 +11,7 @@ with general_ledger as (
 gl_accounting_periods as (
 
     select *
-    from {{ ref('int_workday_financial_management__general_ledger_date_spine') }}
+    from {{ ref('int_workday_financial_management__gl_date_spine') }}
 
 ),
 

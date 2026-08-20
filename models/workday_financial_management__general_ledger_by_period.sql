@@ -4,7 +4,7 @@
 with general_ledger_balances as (
 
     select *
-    from {{ ref('int_workday_financial_management__general_ledger_balances') }}
+    from {{ ref('int_workday_financial_management__gl_balances') }}
 
 ),
 
