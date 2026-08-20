@@ -3,7 +3,7 @@
 with base as (
 
     select *
-    from {{ ref('stg_workday_financial_management__journal_entry_line_worktag_tmp') }}
+    from {{ ref('stg_workday_financial_management__je_line_worktag_tmp') }}
 
 ),
 
@@ -12,7 +12,7 @@ fields as (
     select
         {{
             fivetran_utils.fill_staging_columns(
-                source_columns=adapter.get_columns_in_relation(ref('stg_workday_financial_management__journal_entry_line_worktag_tmp')),
+                source_columns=adapter.get_columns_in_relation(ref('stg_workday_financial_management__je_line_worktag_tmp')),
                 staging_columns=get_journal_entry_line_worktag_columns()
             )
         }}
