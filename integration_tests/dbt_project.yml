@@ -30,6 +30,7 @@ models:
     +schema: "workday_financial_management_{{ var('directed_schema','dev') }}" ## To be used for validation tests
 
 seeds:
+  +quote_columns: "{{ target.type in ('postgres', 'redshift') or var('fivetran_using_source_casing', false) }}"
   +docs:
     show: False
   workday_financial_management_integration_tests:

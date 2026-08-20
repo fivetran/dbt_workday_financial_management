@@ -18,9 +18,6 @@
     {%- if worktag_type is not none and worktag_type | trim != '' -%}
         {%- set column_name = dbt_utils.slugify(worktag_type | trim) -%}
 
-        {#- Two types that slugify to the same name would be a duplicate column and a compile
-            error, so the first one wins. In practice this only fires when a configured type
-            repeats a default, differing by case at most, which is the same column either way. -#}
         {%- if column_name not in claimed_column_names -%}
             {%- do claimed_column_names.append(column_name) -%}
             {%- do resolved_worktag_types.append({'worktag_type': worktag_type | trim, 'column_name': column_name}) -%}
