@@ -29,7 +29,7 @@ final as (
         line_order,
         journal_line_number,
         cast(ledger_account_id as {{ dbt.type_string() }}) as ledger_account_id,
-        ledger_account_code,
+        cast(ledger_account_code as {{ dbt.type_string() }}) as ledger_account_code,
         account_set_name,
         cast(line_company_id as {{ dbt.type_string() }}) as line_company_id,
         cast(currency_id as {{ dbt.type_string() }}) as currency_id,
