@@ -4,22 +4,6 @@
 ) }}
 
 -- Checks that the ledger-currency amounts are the transaction amounts converted at currency_rate.
---
--- This asserts something about the source data rather than about the model, which is the point.
--- The package never computes the ledger amounts -- it takes both sides from the connector -- so
--- nothing else would notice if the relationship does not hold. It matters because
--- workday_financial_management__general_ledger_by_period now reports ledger amounts exclusively.
---
--- It also settles the direction of currency_rate. The package assumes it converts transaction to
--- ledger. If it runs the other way, every row fails immediately and the failing rows carry
--- debit_amount, currency_rate, and ledger_debit_amount side by side so the direction is readable.
---
--- Note: against the generated seeds this test is tautological, because gen_seeds.py derives the
--- ledger amounts as amount * rate. It only proves anything against a real connection.
---
--- Tolerance is the greater of 0.01 and 0.05% of the converted amount. Workday rounds each line to
--- its currency's precision, which varies -- currency.currency_precision is 0 for JPY and 3 for
--- several Gulf currencies -- so a flat two-decimal tolerance would report rounding as a defect.
 
 with general_ledger as (
 

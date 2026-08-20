@@ -4,16 +4,6 @@
 ) }}
 
 -- Double-entry invariant: within a journal entry, debits equal credits.
---
--- Checked in ledger currency for every entry, and in transaction currency only for entries whose
--- lines all share one currency. A multi-currency entry balances after conversion to the ledger
--- currency and is not expected to balance in transaction currency, so applying that check to it
--- would report a failure that is not one.
---
--- Negative debit and credit amounts are legitimate — a company configured for "Keep Debit/Credit
--- and Reverse Sign" records reversals as negative amounts in the original column. The invariant
--- holds either way: a debit of 100 reversed as a credit of 100 and as a debit of -100 both leave
--- the entry balanced. Nothing here uses abs() on an amount.
 
 {% set tolerance = 0.01 %}
 

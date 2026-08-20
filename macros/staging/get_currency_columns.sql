@@ -14,9 +14,6 @@
     {"name": "symbol", "datatype": dbt.type_string()}
 ] %}
 
--- `precision` is a reserved word on Redshift, so it is quoted and aliased rather than selected
--- bare. Snowflake stores unquoted identifiers uppercase unless the connector was configured to
--- preserve source casing, so the name has to be cased to match.
 {% if target.type == 'snowflake' and not var('fivetran_using_source_casing', false) %}
     {{ columns.append({"name": "PRECISION", "datatype": dbt.type_int(), "quote": True, "alias": "currency_precision"}) }}
 {% else %}

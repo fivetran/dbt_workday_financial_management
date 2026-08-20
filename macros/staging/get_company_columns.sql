@@ -1,6 +1,6 @@
 -- The company source table carries 63 columns, roughly two thirds of which configure
 -- procurement, expenses, and business processes that a general ledger never reads. This macro
--- declares only the accounting-relevant subset. See DECISIONLOG.md.
+-- declares only the accounting-relevant subset. 
 
 {% macro get_company_columns() %}
 

@@ -1,23 +1,5 @@
 {% macro resolve_worktag_types() %}
 
-{#-
-    Returns the worktag types that become columns on the general ledger, as a list of
-    {'worktag_type': <value as the connector reports it>, 'column_name': <that value slugified>}.
-
-    Both the pivot and the general ledger call this, so the two agree on the column set without
-    either one having to read the other's columns back out of the warehouse. That keeps the
-    general ledger's schema knowable at parse time, before the pivot has ever been built.
--#}
-
-{#-
-    Worktag types the package always includes -- Workday-delivered worktags that reach general
-    ledger journal lines in most tenants. A type your tenant does not use still produces a column;
-    it is simply null.
-
-    These are spelled the way the Fivetran connector reports them, which is Workday's reference-ID
-    naming rather than the display names in Workday's own worktag documentation: the connector
-    sends Cost_Center_Reference_ID, not Cost Center. Match that convention when adding your own.
--#}
 {%- set default_worktag_types = [
     'Organization_Reference_ID',
     'Custom_Organization_Reference_ID',

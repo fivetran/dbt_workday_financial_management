@@ -4,26 +4,6 @@
 ) }}
 
 -- Reconciles the monthly rollup back to the transaction detail it is built from.
---
--- period_net_change should equal the sum of ledger_net_amount for the same company, account, and
--- month. Between that sum and this column the value passes through a date spine cross join, a left
--- join back onto that spine, a coalesce to zero, and a carry-forward window. Any of those can drop
--- a month, land activity on the wrong row, or double it, and none of it would break a build.
---
--- Densified months are expected and must not fail: a month present in the rollup with no matching
--- detail is correct exactly when its net change is zero.
---
--- The 0.01 buffer is the convention across our accounting and finance packages. Keep it that way:
--- a maintainer moving between these packages should not meet a different tolerance in each.
---
--- It is worth knowing what it rests on. Both sides sum the same rows in a different order, and
--- floating-point addition is order-dependent on every warehouse, so the two totals drift apart by
--- roughly sqrt(lines) * 2.2e-16 * gross. A flat 0.01 holds while gross * sqrt(lines) stays under
--- about 4.5e13 for a single company, account and month. Measured 08/18/2026 against a real tenant
--- with 2.2M journal lines and 220.9B in debits, the worst group scored 7.7e10 -- around 590x
--- inside the limit, drifting by 0.000017. Only if a tenant ever approached that limit would this
--- want widening, and then to greatest(0.01, abs(detail_net_change) * 1e-9) rather than to a larger
--- flat number, since a duplicated line is off by a fraction of the total rather than a billionth.
 
 {% set tolerance = 0.01 %}
 
