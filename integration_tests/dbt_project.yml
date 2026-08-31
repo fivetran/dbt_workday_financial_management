@@ -4,8 +4,7 @@ config-version: 2
 profile: 'integration_tests'
 
 vars:
-  workday_financial_management_database: singular-vector-135519
-  workday_financial_management_schema: wfm_initial_sync
+  workday_financial_management_schema: workday_financial_management_integration_tests
 
   workday_financial_management__worktag_types: ['Company_Reference_ID', 'Location_ID', 'Project_ID', 'Campaign', 'Line_of_Business']
 
