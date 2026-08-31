@@ -260,3 +260,136 @@ sources:
             description: "{{ doc('currency_precision') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+
+      - name: business_plan_detail
+        identifier: "{{ var('workday_financial_management_business_plan_detail_identifier', 'business_plan_detail') }}"
+        description: >
+          The header of a business plan, which is how Workday stores budgets. One row per plan, per
+          company, per fiscal period. The plan's amounts live on business_plan_entry_line.
+        columns:
+          - name: id
+            description: "{{ doc('business_plan_detail_id') }}"
+          - name: index
+            description: "{{ doc('business_plan_detail_index') }}"
+          - name: business_plan_details_ref_id
+            description: "{{ doc('business_plan_reference_id') }}"
+          - name: company_id
+            description: "{{ doc('company_id') }}"
+          - name: currency_id
+            description: "{{ doc('currency_id') }}"
+          - name: business_plan_structure_id
+            description: "{{ doc('business_plan_structure_id') }}"
+          - name: organizing_dimension_id
+            description: "{{ doc('organizing_dimension_id') }}"
+          - name: year
+            description: "{{ doc('plan_year') }}"
+          - name: fiscal_time_interval_id
+            description: "{{ doc('fiscal_time_interval_id') }}"
+          - name: fiscal_posting_interval_code
+            description: "{{ doc('fiscal_posting_interval_code') }}"
+          - name: award_posting_interval_code
+            description: "{{ doc('award_posting_interval_code') }}"
+          - name: award_contract_id
+            description: "{{ doc('award_contract_id') }}"
+          - name: award_proposal_code
+            description: "{{ doc('award_proposal_code') }}"
+          - name: project_budget_code
+            description: "{{ doc('project_budget_code') }}"
+          - name: plan_memo
+            description: "{{ doc('business_plan_memo') }}"
+          - name: _fivetran_synced
+            description: "{{ doc('fivetran_synced') }}"
+
+      - name: business_plan_entry_line
+        identifier: "{{ var('workday_financial_management_business_plan_entry_line_identifier', 'business_plan_entry_line') }}"
+        description: >
+          The individual budgeted amounts of a business plan, and the grain budget is stored at.
+          One row per line. Like journal entry lines, Workday records these as explicit debit and
+          credit columns rather than a single signed amount.
+        columns:
+          - name: business_plan_detail_id
+            description: "{{ doc('business_plan_detail_id') }}"
+          - name: business_plan_detail_index
+            description: "{{ doc('business_plan_detail_index') }}"
+          - name: index
+            description: "{{ doc('business_plan_entry_line_index') }}"
+          - name: line_order
+            description: "{{ doc('business_plan_line_order') }}"
+          - name: ledger_account_id
+            description: "{{ doc('business_plan_ledger_account_id') }}"
+          - name: ledger_account_summary_id
+            description: "{{ doc('ledger_account_summary_id') }}"
+          - name: debit_amount
+            description: "{{ doc('business_plan_debit_amount') }}"
+          - name: credit_amount
+            description: "{{ doc('business_plan_credit_amount') }}"
+          - name: line_memo
+            description: "{{ doc('business_plan_entry_line_memo') }}"
+          - name: _fivetran_synced
+            description: "{{ doc('fivetran_synced') }}"
+
+      - name: business_plan_entry_line_worktag
+        identifier: "{{ var('workday_financial_management_business_plan_entry_line_worktag_identifier', 'business_plan_entry_line_worktag') }}"
+        description: >
+          Bridge table linking business plan entry lines to the worktags tagged on them. Many-to-many,
+          and structurally identical to journal_entry_line_worktag, so budget and actuals resolve
+          worktags the same way.
+        columns:
+          - name: business_plan_detail_id
+            description: "{{ doc('business_plan_detail_id') }}"
+          - name: business_plan_detail_index
+            description: "{{ doc('business_plan_detail_index') }}"
+          - name: business_plan_entry_line_index
+            description: "{{ doc('business_plan_entry_line_index') }}"
+          - name: worktag_id
+            description: "{{ doc('worktag_id') }}"
+          - name: _fivetran_synced
+            description: "{{ doc('fivetran_synced') }}"
+
+      - name: fiscal_period
+        identifier: "{{ var('workday_financial_management_fiscal_period_identifier', 'fiscal_period') }}"
+        description: >
+          The accounting periods of a fiscal schedule, with their start and end dates. This is the
+          period definition budgets are stored against, and it is what lets journal activity be
+          placed on a fiscal calendar rather than a calendar month.
+        columns:
+          - name: fiscal_schedule_id
+            description: "{{ doc('fiscal_schedule_id') }}"
+          - name: fiscal_year_name
+            description: "{{ doc('fiscal_year_name') }}"
+          - name: fiscal_posting_interval_id
+            description: "{{ doc('fiscal_posting_interval_id') }}"
+          - name: fiscal_posting_interval_code
+            description: "{{ doc('fiscal_posting_interval_code') }}"
+          - name: fiscal_period_start_date
+            description: "{{ doc('fiscal_period_start_date') }}"
+          - name: fiscal_period_end_date
+            description: "{{ doc('fiscal_period_end_date') }}"
+          - name: _fivetran_synced
+            description: "{{ doc('fivetran_synced') }}"
+
+      - name: fiscal_year
+        identifier: "{{ var('workday_financial_management_fiscal_year_identifier', 'fiscal_year') }}"
+        description: >
+          The fiscal years of a fiscal schedule, with their start and end dates. Resolves the
+          company's fiscal_schedule_code to a schedule, and gives year-to-date figures a boundary
+          to reset on.
+        columns:
+          - name: fiscal_year_id
+            description: "{{ doc('fiscal_year_id') }}"
+          - name: fiscal_schedule_id
+            description: "{{ doc('fiscal_schedule_id') }}"
+          - name: fiscal_schedule_code
+            description: "{{ doc('fiscal_schedule_code') }}"
+          - name: fiscal_year_name
+            description: "{{ doc('fiscal_year_name') }}"
+          - name: fiscal_year_code
+            description: "{{ doc('fiscal_year_code') }}"
+          - name: fiscal_year_number
+            description: "{{ doc('fiscal_year_number') }}"
+          - name: fiscal_year_start_date
+            description: "{{ doc('fiscal_year_start_date') }}"
+          - name: fiscal_year_end_date
+            description: "{{ doc('fiscal_year_end_date') }}"
+          - name: _fivetran_synced
+            description: "{{ doc('fivetran_synced') }}"

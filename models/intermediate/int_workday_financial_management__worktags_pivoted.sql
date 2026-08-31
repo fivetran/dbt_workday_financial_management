@@ -11,24 +11,10 @@ with journal_entry_line_worktag as (
 
 ),
 
--- Workday splits worktags across two dimensions, and the bridge's worktag_id resolves against either one, so they are unioned into a single lookup.
 worktag as (
 
-    select
-        source_relation,
-        worktag_id,
-        worktag_type,
-        worktag_value
-    from {{ ref('stg_workday_financial_management__worktag') }}
-
-    union all
-
-    select
-        source_relation,
-        custom_worktag_id as worktag_id,
-        configuration_code as worktag_type,
-        custom_worktag_value as worktag_value
-    from {{ ref('stg_workday_financial_management__custom_worktag') }}
+    select *
+    from {{ ref('int_workday_financial_management__worktag_lookup') }}
 
 ),
 

@@ -46,6 +46,25 @@ models:
         description: "{{ doc('created_at') }}"
       - name: budget_date
         description: "{{ doc('budget_date') }}"
+      - name: fiscal_schedule_code
+        description: >
+          {{ doc('fiscal_schedule_code') }}
+
+          Present only when workday_financial_management_using_fiscal_calendar is enabled.
+      - name: fiscal_year_name
+        description: >
+          Fiscal year the line's accounting date falls in, on the schedule its company reports on.
+          This is not the calendar year for a company on a non-calendar schedule.
+      - name: fiscal_period_id
+        description: >
+          Identifier of the fiscal period the line's accounting date falls in. A line has one
+          accounting date, so it lands in exactly one period.
+      - name: fiscal_posting_interval_code
+        description: "{{ doc('fiscal_posting_interval_code') }}"
+      - name: fiscal_period_start_date
+        description: "{{ doc('fiscal_period_start_date') }}"
+      - name: fiscal_period_end_date
+        description: "{{ doc('fiscal_period_end_date') }}"
       - name: company_id
         description: "{{ doc('company_id') }}"
       - name: company_name
@@ -204,3 +223,124 @@ models:
         description: >
           Cumulative balance at the end of the period, carried forward across months with no
           activity.
+
+  - name: workday_financial_management__budget_vs_actuals
+    description: >
+      Budget and actual activity paired on the dimensions they share, with variance and fiscal
+      year-to-date figures. One row per company, ledger account, currency, and fiscal period, per
+      source relation.
+
+      Workday stores budgets as business plans, and business plans are recorded against fiscal
+      periods rather than calendar months. This model is therefore grained on fiscal periods, which
+      is why its period columns are named fiscal_* and do not line up with the calendar months in
+      workday_financial_management__general_ledger_by_period. On a 4-4-5 or similar schedule a
+      fiscal period spans parts of two calendar months, so the two models are not joinable on
+      period. Join them on company and ledger account only, or use the fiscal_* columns the general
+      ledger carries at line grain.
+
+      Only periods where a budget or actual figure exists are emitted. Periods where an account has
+      neither are left out rather than padded with zeroes.
+
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: budget_vs_actuals_id
+        description: >
+          Surrogate key derived from company_id, ledger_account_id, currency_id, fiscal_period_id,
+          and source_relation.
+        tests:
+          - not_null
+          - unique
+      - name: company_id
+        description: "{{ doc('company_id') }}"
+        tests:
+          - not_null
+      - name: company_name
+        description: >
+          {{ doc('company_name') }}
+
+          Null where the plan references a company that is missing from the source.
+      - name: company_code
+        description: "{{ doc('company_code') }}"
+      - name: ledger_account_id
+        description: >
+          Reference to the ledger account budget and actuals are paired on. This is the identifier
+          the ledger account dimension is keyed by. Note that the general ledger exposes this same
+          value as ledger_account_code, not as its own ledger_account_id, which is a separate
+          identifier that resolves to nothing.
+        tests:
+          - not_null
+      - name: ledger_account_name
+        description: >
+          {{ doc('ledger_account_name') }}
+
+          Null where the account code appears in more than one account set. See DECISIONLOG.
+      - name: ledger_account_type
+        description: >
+          {{ doc('ledger_account_type') }}
+
+          Null where the account code appears in more than one account set.
+      - name: currency_id
+        description: >
+          Identifier of the currency both figures on the row are stated in. Currency is part of the
+          key, so budget and actuals recorded in different currencies stay as separate unpaired rows
+          rather than producing a variance across currencies.
+      - name: currency_code
+        description: "{{ doc('currency_code') }}"
+      - name: fiscal_schedule_code
+        description: "{{ doc('fiscal_schedule_code') }}"
+      - name: fiscal_year_name
+        description: >
+          {{ doc('fiscal_year_name') }}
+
+          This is the boundary the year-to-date columns accumulate within.
+      - name: fiscal_year_start_date
+        description: "{{ doc('fiscal_year_start_date') }}"
+      - name: fiscal_year_end_date
+        description: "{{ doc('fiscal_year_end_date') }}"
+      - name: fiscal_period_id
+        description: >
+          Identifier of the fiscal period this row reports on.
+        tests:
+          - not_null
+      - name: fiscal_posting_interval_code
+        description: "{{ doc('fiscal_posting_interval_code') }}"
+      - name: fiscal_period_start_date
+        description: "{{ doc('fiscal_period_start_date') }}"
+      - name: fiscal_period_end_date
+        description: "{{ doc('fiscal_period_end_date') }}"
+      - name: has_budget
+        description: >
+          Whether a budget figure exists for this combination. Distinguishes a budget of zero from
+          no budget at all, which budget_amount alone cannot.
+      - name: has_actuals
+        description: >
+          Whether actual activity exists for this combination. False on a budgeted account that saw
+          no posting in the period.
+      - name: budget_amount
+        description: >
+          Budgeted movement for the period, calculated as budgeted debits minus credits. Positive is
+          a debit, matching the general ledger's net_amount convention. Zero where no budget exists,
+          so read has_budget alongside it.
+      - name: actual_amount
+        description: >
+          Actual movement for the period, the sum of the general ledger's ledger_net_amount for the
+          lines whose accounting date falls in this fiscal period. Zero where no activity exists.
+      - name: variance_amount
+        description: >
+          actual_amount minus budget_amount. Whether a positive number is favourable depends on the
+          account: on an expense account it means overspend, on a revenue account it means
+          outperformance.
+      - name: variance_percent
+        description: >
+          variance_amount as a proportion of the budget's magnitude. Null where budget_amount is
+          zero, since there is no baseline to compare against.
+      - name: budget_amount_year_to_date
+        description: >
+          Running total of budget_amount within the fiscal year, through the end of this period.
+      - name: actual_amount_year_to_date
+        description: >
+          Running total of actual_amount within the fiscal year, through the end of this period.
+      - name: variance_amount_year_to_date
+        description: >
+          actual_amount_year_to_date minus budget_amount_year_to_date.
