@@ -83,6 +83,7 @@ actual_source as (
     from general_ledger
     where ledger_account_code is not null
         and fiscal_period_id is not null
+        and company_id is not null
 
     {{ dbt_utils.group_by(5) }}
 
@@ -104,7 +105,8 @@ source_combined as (
         on budget_source.source_relation = actual_source.source_relation
         and budget_source.company_id = actual_source.company_id
         and budget_source.ledger_account_id = actual_source.ledger_account_id
-        and budget_source.currency_id = actual_source.currency_id
+        -- Currency is nullable, so nulls have to pair with nulls the same way the model does.
+        and coalesce(budget_source.currency_id, '') = coalesce(actual_source.currency_id, '')
         and budget_source.fiscal_period_id = actual_source.fiscal_period_id
 
 ),
@@ -126,7 +128,7 @@ compared as (
         on source_combined.source_relation = budget_vs_actuals.source_relation
         and source_combined.company_id = budget_vs_actuals.company_id
         and source_combined.ledger_account_id = budget_vs_actuals.ledger_account_id
-        and source_combined.currency_id = budget_vs_actuals.currency_id
+        and coalesce(source_combined.currency_id, '') = coalesce(budget_vs_actuals.currency_id, '')
         and source_combined.fiscal_period_id = budget_vs_actuals.fiscal_period_id
 
 ),

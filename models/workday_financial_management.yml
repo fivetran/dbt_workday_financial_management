@@ -163,16 +163,16 @@ models:
 
   - name: workday_financial_management__general_ledger_by_period
     description: >
-      Monthly general ledger rollup. One row per company, ledger account, and calendar month, per
-      source relation. Months with no journal activity are still present, carrying the last known
-      balance forward.
+      Monthly general ledger rollup. One row per company, ledger account, ledger currency, and
+      calendar month, per source relation. Months with no journal activity are still present,
+      carrying the last known balance forward.
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
       - name: general_ledger_by_period_id
         description: >
-          Surrogate key derived from company_id, ledger_account_id, period_first_day, and
-          source_relation.
+          Surrogate key derived from company_id, ledger_account_id, ledger_currency_id,
+          period_first_day, and source_relation.
         tests:
           - not_null
           - unique

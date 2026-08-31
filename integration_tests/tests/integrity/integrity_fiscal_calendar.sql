@@ -4,11 +4,6 @@
 ) }}
 
 -- Guards the two assumptions the fiscal calendar joins rest on.
---
--- Overlapping periods would make a journal line land in more than one of them, quietly duplicating
--- it in the general ledger. Budget is joined to a period without going through the company, on the
--- grounds that a posting interval belongs to exactly one schedule -- if that stops holding, a plan
--- gets dated against a calendar its company does not report on.
 
 with fiscal_period as (
 

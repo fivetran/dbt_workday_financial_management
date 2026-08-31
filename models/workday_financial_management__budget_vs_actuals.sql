@@ -1,7 +1,7 @@
 {{ config(enabled=var('workday_financial_management_using_business_plans', True) and var('workday_financial_management_using_fiscal_calendar', True)) }}
 
--- One row per company, ledger account, currency, and fiscal period in which either a budget or
--- actual activity exists. Periods where neither side has anything are not emitted.
+-- One row per company, ledger account, currency, and fiscal period in which either a budget or actual activity exists.
+-- Periods where neither side has anything are not emitted.
 
 with business_plan_detail as (
 
@@ -59,8 +59,7 @@ ledger_account as (
 
 ),
 
--- The same hold-back the general ledger applies: an account code that appears in more than one
--- account set cannot be resolved to a single name, so it resolves to none.
+-- An account code that appears in more than one account set cannot be resolved to a single name, so it resolves to none.
 ledger_account_code_counts as (
 
     select
@@ -109,10 +108,7 @@ fiscal_period_detail as (
 
 ),
 
--- A posting interval names a position in the year and repeats every year, so the plan's year is
--- part of the key. The company's schedule is deliberately not part of this join: an interval
--- belongs to exactly one schedule already, and requiring the company would drop plans whose
--- company is missing from the source. See DECISIONLOG.
+-- A posting interval names a position in the year and repeats every year, so the plan's year is part of the key. 
 budget_placed as (
 
     select
@@ -129,8 +125,7 @@ budget_placed as (
         and business_plan_entry_line.business_plan_detail_index = business_plan_detail.business_plan_detail_index
         and business_plan_entry_line.source_relation = business_plan_detail.source_relation
 
-    -- Plans carrying no period at all have a plan_year of 0, which matches no fiscal year, so this
-    -- join is what excludes them.
+    -- Plans carrying no period at all have a plan_year of 0, which matches no fiscal year, so this join is what excludes them.
     join fiscal_period
         on business_plan_detail.fiscal_time_interval_id = fiscal_period.fiscal_posting_interval_id
         and cast(business_plan_detail.plan_year as {{ dbt.type_string() }}) = fiscal_period.fiscal_year_name
@@ -155,8 +150,7 @@ budget as (
 
 ),
 
--- The general ledger already places each line on a fiscal period, so actuals read it from there
--- rather than repeating the date-range join. Both sides then agree by construction.
+-- The general ledger already places each line on a fiscal period, so actuals read it from there rather than repeating the date-range join.
 actuals_placed as (
 
     select
@@ -170,6 +164,9 @@ actuals_placed as (
 
     where general_ledger.ledger_account_code is not null
         and general_ledger.fiscal_period_id is not null
+        -- A line with no company cannot be attributed to a plan, and company is part of the key.
+        -- The budget side already drops these.
+        and general_ledger.company_id is not null
 
 ),
 
@@ -187,9 +184,7 @@ actuals as (
 
 ),
 
--- Currency is part of the key rather than an attribute. Budget and actuals stated in different
--- currencies are not comparable, so they stay as separate unpaired rows instead of producing a
--- meaningless variance.
+-- Currency is part of the key rather than an attribute. Budget and actuals stated in different currencies are not comparable, so they stay as separate unpaired rows.
 paired as (
 
     select
@@ -208,7 +203,9 @@ paired as (
         on budget.source_relation = actuals.source_relation
         and budget.company_id = actuals.company_id
         and budget.ledger_account_id = actuals.ledger_account_id
-        and budget.currency_id = actuals.currency_id
+        -- Currency is the one part of the key that is nullable, and a plain equality would leave a
+        -- budget and an actual that are both missing it as two unpaired rows sharing one surrogate key.
+        and coalesce(budget.currency_id, '') = coalesce(actuals.currency_id, '')
         and budget.fiscal_period_id = actuals.fiscal_period_id
 
 ),
@@ -259,8 +256,7 @@ joined as (
 
 ),
 
--- Year to date accumulates within the fiscal year the period belongs to, which is not the calendar
--- year for a company on a non-calendar schedule.
+-- Year to date accumulates within the fiscal year the period belongs to, which is not the calendar year for a company on a non-calendar schedule.
 year_to_date as (
 
     select

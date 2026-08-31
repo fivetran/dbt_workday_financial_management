@@ -100,8 +100,7 @@ ledger_currency as (
 {% if using_fiscal_calendar %}
 ),
 
--- The fiscal periods of the schedule each company reports on. A line has one accounting date, so
--- it falls in exactly one of them -- there is no ambiguity at this grain, unlike a monthly rollup.
+-- The fiscal periods of the schedule each company reports on. 
 company_fiscal_period as (
 
     select *

@@ -9,16 +9,21 @@ vars:
 
   workday_financial_management__worktag_types: ['Company_Reference_ID', 'Location_ID', 'Project_ID', 'Campaign', 'Line_of_Business']
 
-    workday_financial_management_journal_entry_identifier: "journal_entry"
-    workday_financial_management_journal_entry_line_identifier: "journal_entry_line"
-    workday_financial_management_journal_entry_line_worktag_identifier: "journal_entry_line_worktag"
-    workday_financial_management_worktag_identifier: "worktag"
-    workday_financial_management_custom_worktag_identifier: "custom_worktag"
-    workday_financial_management_ledger_identifier: "ledger"
-    workday_financial_management_ledger_account_identifier: "ledger_account"
-    workday_financial_management_journal_source_identifier: "journal_source"
-    workday_financial_management_company_identifier: "company"
-    workday_financial_management_currency_identifier: "currency"
+  workday_financial_management_journal_entry_identifier: "journal_entry"
+  workday_financial_management_journal_entry_line_identifier: "journal_entry_line"
+  workday_financial_management_journal_entry_line_worktag_identifier: "journal_entry_line_worktag"
+  workday_financial_management_worktag_identifier: "worktag"
+  workday_financial_management_custom_worktag_identifier: "custom_worktag"
+  workday_financial_management_ledger_identifier: "ledger"
+  workday_financial_management_ledger_account_identifier: "ledger_account"
+  workday_financial_management_journal_source_identifier: "journal_source"
+  workday_financial_management_company_identifier: "company"
+  workday_financial_management_currency_identifier: "currency"
+  workday_financial_management_business_plan_detail_identifier: "business_plan_detail"
+  workday_financial_management_business_plan_entry_line_identifier: "business_plan_entry_line"
+  workday_financial_management_business_plan_entry_line_worktag_identifier: "business_plan_entry_line_worktag"
+  workday_financial_management_fiscal_period_identifier: "fiscal_period"
+  workday_financial_management_fiscal_year_identifier: "fiscal_year"
 
 models:
   +persist_docs:

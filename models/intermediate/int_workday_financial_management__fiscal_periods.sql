@@ -1,8 +1,7 @@
 {{ config(enabled=var('workday_financial_management_using_fiscal_calendar', True)) }}
 
--- One row per company and fiscal period, resolving each company's fiscal schedule into the dated
--- periods it reports on. Journal activity is placed on a fiscal period by finding the period whose
--- date range contains the accounting date.
+-- One row per company and fiscal period, resolving each company's fiscal schedule into the dated periods it reports on. 
+-- Journal activity is placed on a fiscal period by finding the period whose date range contains the accounting date.
 
 with company as (
 
@@ -25,8 +24,7 @@ fiscal_period as (
 
 ),
 
--- A company names its schedule by code, so the schedule identifier has to come from the fiscal
--- year, which carries both.
+-- A company names its schedule by code, so the schedule identifier has to come from the fiscal year, which carries both.
 company_schedule as (
 
     select distinct

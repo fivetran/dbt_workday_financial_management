@@ -1,8 +1,7 @@
 {{ config(enabled=var('workday_financial_management_using_worktags', True)) }}
 
--- Workday splits worktags across two dimensions, and a bridge's worktag_id resolves against either
--- one, so they are unioned into a single lookup. Both the journal line pivot and the business plan
--- pivot read this, so budget and actuals resolve the same worktag to the same value.
+-- Workday splits worktags across two dimensions, and a bridge's worktag_id resolves against either, so they are unioned into a single lookup. 
+-- Both the journal line pivot and the business plan pivot read this, so budget and actuals resolve the same worktag to the same value.
 
 with worktag as (
 
