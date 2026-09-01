@@ -51,8 +51,8 @@ final as (
         fiscal_period.fiscal_year_name,
         fiscal_period.fiscal_posting_interval_id,
         fiscal_period.fiscal_posting_interval_code,
-        fiscal_period.fiscal_period_start_date,
-        fiscal_period.fiscal_period_end_date,
+        fiscal_period.fiscal_month_start_date,
+        fiscal_period.fiscal_month_end_date,
         fiscal_year.fiscal_year_start_date,
         fiscal_year.fiscal_year_end_date
     from company_schedule

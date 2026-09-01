@@ -95,8 +95,8 @@ fiscal_period_detail as (
         fiscal_period.fiscal_year_name,
         fiscal_period.fiscal_posting_interval_id,
         fiscal_period.fiscal_posting_interval_code,
-        fiscal_period.fiscal_period_start_date,
-        fiscal_period.fiscal_period_end_date,
+        fiscal_period.fiscal_month_start_date,
+        fiscal_period.fiscal_month_end_date,
         fiscal_year.fiscal_year_start_date,
         fiscal_year.fiscal_year_end_date
     from fiscal_period
@@ -228,9 +228,9 @@ joined as (
         fiscal_period_detail.fiscal_year_start_date,
         fiscal_period_detail.fiscal_year_end_date,
         paired.fiscal_period_id,
-        fiscal_period_detail.fiscal_posting_interval_code,
-        fiscal_period_detail.fiscal_period_start_date,
-        fiscal_period_detail.fiscal_period_end_date,
+        fiscal_period_detail.fiscal_posting_interval_code as fiscal_month_name,
+        fiscal_period_detail.fiscal_month_start_date,
+        fiscal_period_detail.fiscal_month_end_date,
         paired.has_budget,
         paired.has_actuals,
         paired.budget_amount,
@@ -267,12 +267,12 @@ year_to_date as (
         end as variance_percent,
         sum(joined.budget_amount) over (
             partition by joined.source_relation, joined.company_id, joined.ledger_account_id, joined.currency_id, joined.fiscal_year_name
-            order by joined.fiscal_period_start_date
+            order by joined.fiscal_month_start_date
             rows between unbounded preceding and current row
         ) as budget_amount_year_to_date,
         sum(joined.actual_amount) over (
             partition by joined.source_relation, joined.company_id, joined.ledger_account_id, joined.currency_id, joined.fiscal_year_name
-            order by joined.fiscal_period_start_date
+            order by joined.fiscal_month_start_date
             rows between unbounded preceding and current row
         ) as actual_amount_year_to_date
     from joined

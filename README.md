@@ -128,7 +128,7 @@ Every model not named above builds as normal.
 
 For most fiscal schedules these are the same thing — a `May_April` schedule shifts only the year boundary, not the month boundaries. On a 4-4-5 schedule they are not: a fiscal period straddles two calendar months, so no calendar-month row can carry a single fiscal period label and vice versa. That is why neither model carries the other's period columns.
 
-**Do not join the two models on period.** Join them on company and ledger account, and take the period from whichever model matches the calendar you report on. If you need a fiscal rollup of actuals for accounts that carry no budget, build it from `workday_financial_management__general_ledger`, which carries `fiscal_year_name` and `fiscal_period_start_date` on every line.
+**Do not join the two models on period.** Join them on company and ledger account, and take the period from whichever model matches the calendar you report on. If you need a fiscal rollup of actuals for accounts that carry no budget, build it from `workday_financial_management__general_ledger`, which carries `fiscal_year_name`, `fiscal_year_start_date`, `fiscal_year_end_date`, and `fiscal_month_start_date` on every line.
 
 #### Change which journal entry statuses count as posted
 Both output models include only journal entries whose status is `POSTED`. If your Workday tenant uses different status values, add the following configuration to your root `dbt_project.yml` file:

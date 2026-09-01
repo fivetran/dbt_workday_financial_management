@@ -399,12 +399,12 @@ and interval together.
 Code of the posting interval, for example the name of the month or quarter it represents.
 {% enddocs %}
 
-{% docs fiscal_period_start_date %}
+{% docs fiscal_month_start_date %}
 First day of the fiscal period. On a 4-4-5 or similar schedule this does not fall on the first day
 of a calendar month.
 {% enddocs %}
 
-{% docs fiscal_period_end_date %}
+{% docs fiscal_month_end_date %}
 Last day of the fiscal period. On a 4-4-5 or similar schedule this does not fall on the last day of
 a calendar month, and a single fiscal period can span two calendar months.
 {% enddocs %}

@@ -57,8 +57,8 @@ overlapping_periods as (
         on earlier.fiscal_schedule_id = later.fiscal_schedule_id
         and earlier.source_relation = later.source_relation
         and earlier.fiscal_period_id < later.fiscal_period_id
-        and earlier.fiscal_period_start_date <= later.fiscal_period_end_date
-        and later.fiscal_period_start_date <= earlier.fiscal_period_end_date
+        and earlier.fiscal_month_start_date <= later.fiscal_month_end_date
+        and later.fiscal_month_start_date <= earlier.fiscal_month_end_date
 
 ),
 

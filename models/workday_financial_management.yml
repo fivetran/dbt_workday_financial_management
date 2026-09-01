@@ -55,16 +55,20 @@ models:
         description: >
           Fiscal year the line's accounting date falls in, on the schedule its company reports on.
           This is not the calendar year for a company on a non-calendar schedule.
+      - name: fiscal_year_start_date
+        description: "{{ doc('fiscal_year_start_date') }}"
+      - name: fiscal_year_end_date
+        description: "{{ doc('fiscal_year_end_date') }}"
       - name: fiscal_period_id
         description: >
           Identifier of the fiscal period the line's accounting date falls in. A line has one
           accounting date, so it lands in exactly one period.
-      - name: fiscal_posting_interval_code
+      - name: fiscal_month_name
         description: "{{ doc('fiscal_posting_interval_code') }}"
-      - name: fiscal_period_start_date
-        description: "{{ doc('fiscal_period_start_date') }}"
-      - name: fiscal_period_end_date
-        description: "{{ doc('fiscal_period_end_date') }}"
+      - name: fiscal_month_start_date
+        description: "{{ doc('fiscal_month_start_date') }}"
+      - name: fiscal_month_end_date
+        description: "{{ doc('fiscal_month_end_date') }}"
       - name: company_id
         description: "{{ doc('company_id') }}"
       - name: company_name
@@ -303,12 +307,12 @@ models:
           Identifier of the fiscal period this row reports on.
         tests:
           - not_null
-      - name: fiscal_posting_interval_code
+      - name: fiscal_month_name
         description: "{{ doc('fiscal_posting_interval_code') }}"
-      - name: fiscal_period_start_date
-        description: "{{ doc('fiscal_period_start_date') }}"
-      - name: fiscal_period_end_date
-        description: "{{ doc('fiscal_period_end_date') }}"
+      - name: fiscal_month_start_date
+        description: "{{ doc('fiscal_month_start_date') }}"
+      - name: fiscal_month_end_date
+        description: "{{ doc('fiscal_month_end_date') }}"
       - name: has_budget
         description: >
           Whether a budget figure exists for this combination. Distinguishes a budget of zero from

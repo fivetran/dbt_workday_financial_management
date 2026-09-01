@@ -33,8 +33,8 @@ final as (
         cast(fiscal_year_name as {{ dbt.type_string() }}) as fiscal_year_name,
         cast(fiscal_posting_interval_id as {{ dbt.type_string() }}) as fiscal_posting_interval_id,
         fiscal_posting_interval_code,
-        fiscal_period_start_date,
-        fiscal_period_end_date,
+        fiscal_period_start_date as fiscal_month_start_date,
+        fiscal_period_end_date as fiscal_month_end_date,
         _fivetran_synced
     from fields
     where not coalesce(_fivetran_deleted, false)

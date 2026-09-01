@@ -362,9 +362,9 @@ sources:
           - name: fiscal_posting_interval_code
             description: "{{ doc('fiscal_posting_interval_code') }}"
           - name: fiscal_period_start_date
-            description: "{{ doc('fiscal_period_start_date') }}"
+            description: "{{ doc('fiscal_month_start_date') }}"
           - name: fiscal_period_end_date
-            description: "{{ doc('fiscal_period_end_date') }}"
+            description: "{{ doc('fiscal_month_end_date') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
 
