@@ -1,0 +1,51 @@
+database_key: workday_financial_management_database
+schema_key: workday_financial_management_schema
+
+dbt_versions: ">=1.3.0 <3.0.0"
+
+table_variables:
+  workday_financial_management_using_worktags:
+    - worktag
+    - custom_worktag
+    - journal_entry_line_worktag
+  workday_financial_management_using_business_plans:
+    - business_plan_detail
+    - business_plan_entry_line
+    - business_plan_entry_line_worktag
+  workday_financial_management_using_fiscal_calendar:
+    - fiscal_period
+    - fiscal_year
+
+destination_configurations:
+  databricks:
+    dispatch:
+      - macro_namespace: dbt_utils
+        search_order: [ 'spark_utils', 'dbt_utils' ]
+
+public_models: [
+  "workday_financial_management__general_ledger",
+  "workday_financial_management__general_ledger_by_period",
+  "workday_financial_management__budget_vs_actuals"
+]
+
+supported_vars:
+  workday_financial_management_using_worktags:
+    type: boolean
+    description: "Enables the worktag source tables and adds one column per configured worktag type to the general ledger. Set to false if you do not use worktags."
+    display_name: "Use Worktags"
+  workday_financial_management__posted_statuses:
+    type: list
+    description: "Journal entry statuses that count as posted. Only these reach the end models. Leave as POSTED unless your tenant uses different status values."
+    display_name: "Posted Journal Entry Statuses"
+  workday_financial_management__worktag_types:
+    type: list
+    description: "Worktag types to add as columns on the general ledger, on top of the six delivered types the package always includes. Values must match your worktag table's attribute, or your custom_worktag table's configuration_code, and are matched case-insensitively."
+    display_name: "Worktag Types"
+  workday_financial_management_using_business_plans:
+    type: boolean
+    description: "Enables the business plan source tables, which is where Workday stores budgets, and the budget vs actuals model. Set to false if you do not budget in Workday."
+    display_name: "Use Business Plans"
+  workday_financial_management_using_fiscal_calendar:
+    type: boolean
+    description: "Enables the fiscal period and fiscal year source tables. These add fiscal period columns to the general ledger and are required by budget vs actuals, which is grained on fiscal periods. Set to false if you do not sync them."
+    display_name: "Use Fiscal Calendar"

@@ -1,0 +1,496 @@
+version: 2
+
+models:
+  - name: stg_workday_financial_management__journal_entry
+    description: >
+      Each record represents the header of an accounting journal entry, carrying the accounting
+      date, status, source system, ledger, and company the entry posts to. Debit and credit amounts
+      live on stg_workday_financial_management__journal_entry_line.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: journal_entry_id
+        description: "{{ doc('journal_entry_id') }}"
+        tests:
+          - not_null
+      - name: company_id
+        description: "{{ doc('company_id') }}"
+      - name: ledger_id
+        description: "{{ doc('ledger_id') }}"
+      - name: journal_source_id
+        description: "{{ doc('journal_source_id') }}"
+      - name: currency_id
+        description: "{{ doc('currency_id') }}"
+      - name: ledger_period_id
+        description: "{{ doc('ledger_period_id') }}"
+      - name: accounting_date
+        description: "{{ doc('accounting_date') }}"
+      - name: transaction_date
+        description: "{{ doc('transaction_date') }}"
+      - name: created_at
+        description: "{{ doc('created_at') }}"
+      - name: journal_number
+        description: "{{ doc('journal_number') }}"
+      - name: journal_sequence_number
+        description: "{{ doc('journal_sequence_number') }}"
+      - name: journal_entry_status
+        description: "{{ doc('journal_entry_status') }}"
+      - name: book_code
+        description: "{{ doc('book_code') }}"
+      - name: journal_entry_memo
+        description: "{{ doc('journal_entry_memo') }}"
+      - name: external_reference_id
+        description: "{{ doc('external_reference_id') }}"
+      - name: total_ledger_debits
+        description: "{{ doc('total_ledger_debits') }}"
+      - name: total_ledger_credits
+        description: "{{ doc('total_ledger_credits') }}"
+      - name: cancel_reverses_journal_entry_id
+        description: "{{ doc('cancel_reverses_journal_entry_id') }}"
+      - name: cancel_reversed_by_journal_entry_id
+        description: "{{ doc('cancel_reversed_by_journal_entry_id') }}"
+      - name: functional_reverses_journal_entry_id
+        description: "{{ doc('functional_reverses_journal_entry_id') }}"
+      - name: functional_reversed_by_journal_entry_id
+        description: "{{ doc('functional_reversed_by_journal_entry_id') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__journal_entry_line
+    description: >
+      Each record represents a single debit or credit line of a journal entry. This is the
+      transactional grain of the general ledger. Workday stores debits and credits as explicit
+      columns in both transaction and ledger currency.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: journal_entry_line_id
+        description: >
+          Surrogate key derived from journal_entry_id, journal_entry_line_index, and
+          source_relation.
+        tests:
+          - not_null
+          - unique
+      - name: journal_entry_id
+        description: "{{ doc('journal_entry_id') }}"
+        tests:
+          - not_null
+      - name: journal_entry_line_index
+        description: "{{ doc('journal_entry_line_index') }}"
+        tests:
+          - not_null
+      - name: line_order
+        description: "{{ doc('line_order') }}"
+      - name: journal_line_number
+        description: "{{ doc('journal_line_number') }}"
+      - name: ledger_account_id
+        description: "{{ doc('ledger_account_id') }}"
+      - name: ledger_account_code
+        description: "{{ doc('ledger_account_code') }}"
+      - name: account_set_name
+        description: "{{ doc('account_set_name') }}"
+      - name: line_company_id
+        description: "{{ doc('line_company_id') }}"
+      - name: currency_id
+        description: "{{ doc('currency_id') }}"
+      - name: debit_amount
+        description: "{{ doc('debit_amount') }}"
+      - name: credit_amount
+        description: "{{ doc('credit_amount') }}"
+      - name: ledger_debit_amount
+        description: "{{ doc('ledger_debit_amount') }}"
+      - name: ledger_credit_amount
+        description: "{{ doc('ledger_credit_amount') }}"
+      - name: currency_rate
+        description: "{{ doc('currency_rate') }}"
+      - name: quantity
+        description: "{{ doc('quantity') }}"
+      - name: budget_date
+        description: "{{ doc('budget_date') }}"
+      - name: journal_entry_line_memo
+        description: "{{ doc('journal_entry_line_memo') }}"
+      - name: exclude_from_spend_report
+        description: "{{ doc('exclude_from_spend_report') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__journal_entry_line_worktag
+    description: >
+      Each record links a journal entry line to one worktag applied to it. The relationship is
+      many-to-many — a single line can carry several worktags of different types. Join to
+      stg_workday_financial_management__worktag to resolve a worktag's type and name.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: journal_entry_line_worktag_id
+        description: >
+          Surrogate key derived from journal_entry_id, journal_entry_line_index, worktag_id, and
+          source_relation.
+        tests:
+          - not_null
+          - unique
+      - name: journal_entry_id
+        description: "{{ doc('journal_entry_id') }}"
+        tests:
+          - not_null
+      - name: journal_entry_line_index
+        description: "{{ doc('journal_entry_line_index') }}"
+        tests:
+          - not_null
+      - name: worktag_id
+        description: "{{ doc('worktag_id') }}"
+        tests:
+          - not_null
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__worktag
+    description: >
+      Each record represents a worktag, Workday's flexible accounting dimension. A worktag is a
+      typed tag such as a cost center, fund, grant, program, or project that you apply to
+      transactions to carry dimensional context without dedicated columns.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: worktag_id
+        description: "{{ doc('worktag_id') }}"
+        tests:
+          - not_null
+      - name: worktag_type
+        description: "{{ doc('worktag_type') }}"
+      - name: worktag_name
+        description: "{{ doc('worktag_name') }}"
+      - name: worktag_value
+        description: "{{ doc('worktag_value') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__custom_worktag
+    description: >
+      Each record represents a tenant-defined worktag, as distinct from the worktags Workday
+      delivers. configuration_code names the worktag's type, playing the part worktag_type plays
+      in stg_workday_financial_management__worktag, and custom_worktag_value carries its value.
+      The general ledger reads both dimensions through the same bridge.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: custom_worktag_id
+        description: "{{ doc('custom_worktag_id') }}"
+        tests:
+          - not_null
+      - name: worktag_code
+        description: "{{ doc('worktag_code') }}"
+      - name: configuration_code
+        description: "{{ doc('configuration_code') }}"
+      - name: custom_worktag_value
+        description: "{{ doc('custom_worktag_value') }}"
+      - name: is_inactive
+        description: "{{ doc('is_inactive') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__ledger
+    description: >
+      Each record represents a ledger, the set of books a journal entry posts to. A company may
+      maintain several ledgers, for example an actuals ledger alongside separate budget or
+      statistical ledgers.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: ledger_id
+        description: "{{ doc('ledger_id') }}"
+        tests:
+          - not_null
+      - name: company_id
+        description: "{{ doc('company_id') }}"
+      - name: ledger_code
+        description: "{{ doc('ledger_code') }}"
+      - name: ledger_type
+        description: "{{ doc('ledger_type') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__ledger_account
+    description: >
+      Each record represents a ledger account in the chart of accounts. The account code is not
+      stored here — it is denormalized onto stg_workday_financial_management__journal_entry_line.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: ledger_account_id
+        description: "{{ doc('ledger_account_id') }}"
+        tests:
+          - not_null
+      - name: account_set_id
+        description: "{{ doc('account_set_id') }}"
+      - name: ledger_account_name
+        description: "{{ doc('ledger_account_name') }}"
+      - name: ledger_account_type
+        description: "{{ doc('ledger_account_type') }}"
+      - name: is_retired
+        description: "{{ doc('is_retired') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__journal_source
+    description: >
+      Each record represents the originating system or business process that produced a journal
+      entry, for example Manual Journal, Supplier Invoice, or Payroll.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: journal_source_id
+        description: "{{ doc('journal_source_id') }}"
+        tests:
+          - not_null
+      - name: journal_source_reference_id
+        description: "{{ doc('journal_source_reference_id') }}"
+      - name: journal_source_name
+        description: "{{ doc('journal_source_name') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__company
+    description: >
+      Each record represents a company, the legal entity that journal entries post to. This model
+      also carries the accounting sign-convention settings that govern how debits and credits are
+      stored.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: company_id
+        description: "{{ doc('company_id') }}"
+        tests:
+          - not_null
+      - name: currency_id
+        description: "{{ doc('currency_id') }}"
+      - name: account_set_id
+        description: "{{ doc('account_set_id') }}"
+      - name: company_name
+        description: "{{ doc('company_name') }}"
+      - name: company_code
+        description: "{{ doc('company_code') }}"
+      - name: is_active
+        description: "{{ doc('is_active') }}"
+      - name: fiscal_schedule_code
+        description: "{{ doc('fiscal_schedule_code') }}"
+      - name: default_reporting_book_code
+        description: "{{ doc('default_reporting_book_code') }}"
+      - name: is_debit_credit_reversed
+        description: "{{ doc('is_debit_credit_reversed') }}"
+      - name: is_sign_reversed
+        description: "{{ doc('is_sign_reversed') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__currency
+    description: >
+      Each record represents a currency referenced by journal entries and their lines. Workday
+      records journal amounts in both a transaction currency and the ledger's functional currency.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: currency_id
+        description: "{{ doc('currency_id') }}"
+        tests:
+          - not_null
+      - name: currency_code
+        description: "{{ doc('currency_code') }}"
+      - name: currency_name
+        description: "{{ doc('currency_name') }}"
+      - name: currency_numeric_code
+        description: "{{ doc('currency_numeric_code') }}"
+      - name: currency_symbol
+        description: "{{ doc('currency_symbol') }}"
+      - name: currency_precision
+        description: "{{ doc('currency_precision') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__business_plan_detail
+    description: >
+      Each record represents the header of a business plan, which is how Workday stores budgets.
+      One row per plan, per company, per fiscal period. The budgeted amounts live on
+      stg_workday_financial_management__business_plan_entry_line.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: business_plan_detail_key
+        description: >
+          Surrogate key derived from business_plan_detail_id, business_plan_detail_index, and
+          source_relation.
+        tests:
+          - not_null
+          - unique
+      - name: business_plan_detail_id
+        description: "{{ doc('business_plan_detail_id') }}"
+        tests:
+          - not_null
+      - name: business_plan_detail_index
+        description: "{{ doc('business_plan_detail_index') }}"
+      - name: business_plan_reference_id
+        description: "{{ doc('business_plan_reference_id') }}"
+      - name: company_id
+        description: "{{ doc('company_id') }}"
+      - name: currency_id
+        description: "{{ doc('currency_id') }}"
+      - name: business_plan_structure_id
+        description: "{{ doc('business_plan_structure_id') }}"
+      - name: organizing_dimension_id
+        description: "{{ doc('organizing_dimension_id') }}"
+      - name: plan_year
+        description: "{{ doc('plan_year') }}"
+      - name: fiscal_time_interval_id
+        description: "{{ doc('fiscal_time_interval_id') }}"
+      - name: fiscal_posting_interval_code
+        description: "{{ doc('fiscal_posting_interval_code') }}"
+      - name: award_posting_interval_code
+        description: "{{ doc('award_posting_interval_code') }}"
+      - name: award_contract_id
+        description: "{{ doc('award_contract_id') }}"
+      - name: award_proposal_code
+        description: "{{ doc('award_proposal_code') }}"
+      - name: project_budget_code
+        description: "{{ doc('project_budget_code') }}"
+      - name: business_plan_memo
+        description: "{{ doc('business_plan_memo') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__business_plan_entry_line
+    description: >
+      Each record represents a single budgeted amount on a business plan, and this is the grain
+      budget is stored at. Workday records these as explicit debit and credit columns, the same way
+      it records journal entry lines.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: business_plan_entry_line_id
+        description: >
+          Surrogate key derived from business_plan_detail_id, business_plan_detail_index,
+          business_plan_entry_line_index, and source_relation.
+        tests:
+          - not_null
+          - unique
+      - name: business_plan_detail_id
+        description: "{{ doc('business_plan_detail_id') }}"
+        tests:
+          - not_null
+      - name: business_plan_detail_index
+        description: "{{ doc('business_plan_detail_index') }}"
+      - name: business_plan_entry_line_index
+        description: "{{ doc('business_plan_entry_line_index') }}"
+        tests:
+          - not_null
+      - name: line_order
+        description: "{{ doc('business_plan_line_order') }}"
+      - name: ledger_account_id
+        description: "{{ doc('business_plan_ledger_account_id') }}"
+      - name: ledger_account_summary_id
+        description: "{{ doc('ledger_account_summary_id') }}"
+      - name: debit_amount
+        description: "{{ doc('business_plan_debit_amount') }}"
+      - name: credit_amount
+        description: "{{ doc('business_plan_credit_amount') }}"
+      - name: business_plan_entry_line_memo
+        description: "{{ doc('business_plan_entry_line_memo') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__business_plan_line_worktag
+    description: >
+      Each record links a business plan entry line to one worktag applied to it. The relationship is
+      many-to-many, and structurally identical to
+      stg_workday_financial_management__journal_entry_line_worktag, so budget and actuals resolve
+      worktags through the same lookup.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: business_plan_line_worktag_id
+        description: >
+          Surrogate key derived from business_plan_detail_id, business_plan_detail_index,
+          business_plan_entry_line_index, worktag_id, and source_relation.
+        tests:
+          - not_null
+          - unique
+      - name: business_plan_detail_id
+        description: "{{ doc('business_plan_detail_id') }}"
+        tests:
+          - not_null
+      - name: business_plan_detail_index
+        description: "{{ doc('business_plan_detail_index') }}"
+      - name: business_plan_entry_line_index
+        description: "{{ doc('business_plan_entry_line_index') }}"
+        tests:
+          - not_null
+      - name: worktag_id
+        description: "{{ doc('worktag_id') }}"
+        tests:
+          - not_null
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__fiscal_period
+    description: >
+      Each record represents one accounting period of a fiscal schedule, with its start and end
+      dates. This is the period definition budgets are stored against. Note that a period is
+      identified by schedule, year, and posting interval together, because a posting interval names
+      a position in the year and repeats every year.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: fiscal_period_id
+        description: >
+          Surrogate key derived from fiscal_schedule_id, fiscal_year_name,
+          fiscal_posting_interval_id, and source_relation. The source carries no key of its own.
+        tests:
+          - not_null
+          - unique
+      - name: fiscal_schedule_id
+        description: "{{ doc('fiscal_schedule_id') }}"
+        tests:
+          - not_null
+      - name: fiscal_year_name
+        description: "{{ doc('fiscal_year_name') }}"
+      - name: fiscal_posting_interval_id
+        description: "{{ doc('fiscal_posting_interval_id') }}"
+      - name: fiscal_posting_interval_code
+        description: "{{ doc('fiscal_posting_interval_code') }}"
+      - name: fiscal_month_start_date
+        description: "{{ doc('fiscal_month_start_date') }}"
+      - name: fiscal_month_end_date
+        description: "{{ doc('fiscal_month_end_date') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__fiscal_year
+    description: >
+      Each record represents one fiscal year of a fiscal schedule, with its start and end dates.
+      Resolves a company's fiscal_schedule_code to a schedule, and gives year-to-date figures the
+      boundary they reset on.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: fiscal_year_id
+        description: "{{ doc('fiscal_year_id') }}"
+        tests:
+          - not_null
+          - unique
+      - name: fiscal_schedule_id
+        description: "{{ doc('fiscal_schedule_id') }}"
+        tests:
+          - not_null
+      - name: fiscal_schedule_code
+        description: "{{ doc('fiscal_schedule_code') }}"
+      - name: fiscal_year_name
+        description: "{{ doc('fiscal_year_name') }}"
+      - name: fiscal_year_code
+        description: "{{ doc('fiscal_year_code') }}"
+      - name: fiscal_year_number
+        description: "{{ doc('fiscal_year_number') }}"
+      - name: fiscal_year_start_date
+        description: "{{ doc('fiscal_year_start_date') }}"
+      - name: fiscal_year_end_date
+        description: "{{ doc('fiscal_year_end_date') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"

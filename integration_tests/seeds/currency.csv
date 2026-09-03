@@ -1,0 +1,3 @@
+id,currency_code,description,numeric_code,symbol,precision,_fivetran_synced,_fivetran_deleted
+9a1803a1be12ee7893d96a53cf6c0a01,USD,US Dollar,840,$,2,2026-01-15T09:00:00Z,false
+ead22605adb2e161c92796cbf5d15bdb,EUR,Euro,978,E,2,2026-01-15T09:00:00Z,false

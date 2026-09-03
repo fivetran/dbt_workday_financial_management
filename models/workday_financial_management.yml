@@ -1,0 +1,350 @@
+version: 2
+
+models:
+  - name: workday_financial_management__general_ledger
+    description: >
+      Transaction-level general ledger detail. One row per journal entry line, per source relation.
+      Journal header, company, ledger, ledger account, journal source, and currency context are
+      denormalized onto every line. Only posted journal entries are included.
+
+      Workday supplies debits and credits natively, so both the debit/credit pair and a signed
+      net_amount are exposed. Note that negative debit and credit amounts are legitimate: a company
+      configured for "Keep Debit/Credit and Reverse Sign" records its reversals as a negative
+      amount in the original column rather than moving it to the opposite column.
+
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: general_ledger_id
+        description: >
+          Surrogate key derived from journal_entry_id, journal_entry_line_index, and
+          source_relation.
+        tests:
+          - not_null
+          - unique
+      - name: journal_entry_id
+        description: "{{ doc('journal_entry_id') }}"
+        tests:
+          - not_null
+      - name: journal_entry_line_index
+        description: "{{ doc('journal_entry_line_index') }}"
+        tests:
+          - not_null
+      - name: journal_number
+        description: "{{ doc('journal_number') }}"
+      - name: journal_sequence_number
+        description: "{{ doc('journal_sequence_number') }}"
+      - name: journal_entry_status
+        description: "{{ doc('journal_entry_status') }}"
+      - name: book_code
+        description: "{{ doc('book_code') }}"
+      - name: accounting_date
+        description: "{{ doc('accounting_date') }}"
+      - name: transaction_date
+        description: "{{ doc('transaction_date') }}"
+      - name: created_at
+        description: "{{ doc('created_at') }}"
+      - name: budget_date
+        description: "{{ doc('budget_date') }}"
+      - name: fiscal_schedule_code
+        description: >
+          {{ doc('fiscal_schedule_code') }}
+
+          Present only when workday_financial_management_using_fiscal_calendar is enabled.
+      - name: fiscal_year_name
+        description: >
+          Fiscal year the line's accounting date falls in, on the schedule its company reports on.
+          This is not the calendar year for a company on a non-calendar schedule.
+      - name: fiscal_year_start_date
+        description: "{{ doc('fiscal_year_start_date') }}"
+      - name: fiscal_year_end_date
+        description: "{{ doc('fiscal_year_end_date') }}"
+      - name: fiscal_period_id
+        description: >
+          Identifier of the fiscal period the line's accounting date falls in. A line has one
+          accounting date, so it lands in exactly one period.
+      - name: fiscal_month_name
+        description: "{{ doc('fiscal_posting_interval_code') }}"
+      - name: fiscal_month_start_date
+        description: "{{ doc('fiscal_month_start_date') }}"
+      - name: fiscal_month_end_date
+        description: "{{ doc('fiscal_month_end_date') }}"
+      - name: company_id
+        description: "{{ doc('company_id') }}"
+      - name: company_name
+        description: "{{ doc('company_name') }}"
+      - name: company_code
+        description: "{{ doc('company_code') }}"
+      - name: line_company_id
+        description: "{{ doc('line_company_id') }}"
+      - name: ledger_id
+        description: "{{ doc('ledger_id') }}"
+      - name: ledger_code
+        description: "{{ doc('ledger_code') }}"
+      - name: ledger_type
+        description: "{{ doc('ledger_type') }}"
+      - name: ledger_account_id
+        description: "{{ doc('ledger_account_id') }}"
+      - name: ledger_account_code
+        description: "{{ doc('ledger_account_code') }}"
+      - name: ledger_account_name
+        description: >
+          {{ doc('ledger_account_name') }}
+
+          Null where the account code appears in more than one account set. See DECISIONLOG.
+      - name: ledger_account_type
+        description: >
+          {{ doc('ledger_account_type') }}
+
+          Null where the account code appears in more than one account set. See DECISIONLOG.
+      - name: account_set_id
+        description: >
+          {{ doc('account_set_id') }}
+
+          Null where the account code appears in more than one account set. See DECISIONLOG.
+      - name: account_set_name
+        description: "{{ doc('account_set_name') }}"
+      - name: journal_source_id
+        description: "{{ doc('journal_source_id') }}"
+      - name: journal_source_name
+        description: "{{ doc('journal_source_name') }}"
+      - name: currency_id
+        description: "{{ doc('currency_id') }}"
+      - name: currency_code
+        description: "{{ doc('currency_code') }}"
+      - name: ledger_currency_id
+        description: >
+          Identifier of the ledger (functional) currency the ledger_* amount columns are stated in. Null where the ledger is missing from the source.
+      - name: ledger_currency_code
+        description: >
+          ISO code of the ledger (functional) currency. Unit for ledger_debit_amount,
+          ledger_credit_amount, and ledger_net_amount. Null where the ledger is missing from the source.
+      - name: currency_rate
+        description: "{{ doc('currency_rate') }}"
+      - name: debit_amount
+        description: "{{ doc('debit_amount') }}"
+      - name: credit_amount
+        description: "{{ doc('credit_amount') }}"
+      - name: net_amount
+        description: >
+          Signed movement on the line in transaction currency, calculated as debit_amount minus
+          credit_amount. Positive is a debit. Sum this instead of handling the debit and credit
+          columns separately.
+      - name: ledger_debit_amount
+        description: "{{ doc('ledger_debit_amount') }}"
+      - name: ledger_credit_amount
+        description: "{{ doc('ledger_credit_amount') }}"
+      - name: ledger_net_amount
+        description: >
+          Signed movement on the line in the ledger's functional currency, calculated as
+          ledger_debit_amount minus ledger_credit_amount. Positive is a debit.
+      - name: quantity
+        description: "{{ doc('quantity') }}"
+      - name: journal_line_number
+        description: "{{ doc('journal_line_number') }}"
+      - name: line_order
+        description: "{{ doc('line_order') }}"
+      - name: journal_entry_memo
+        description: "{{ doc('journal_entry_memo') }}"
+      - name: journal_entry_line_memo
+        description: "{{ doc('journal_entry_line_memo') }}"
+      - name: external_reference_id
+        description: "{{ doc('external_reference_id') }}"
+      - name: exclude_from_spend_report
+        description: "{{ doc('exclude_from_spend_report') }}"
+      - name: cancel_reverses_journal_entry_id
+        description: "{{ doc('cancel_reverses_journal_entry_id') }}"
+      - name: cancel_reversed_by_journal_entry_id
+        description: "{{ doc('cancel_reversed_by_journal_entry_id') }}"
+      - name: functional_reverses_journal_entry_id
+        description: "{{ doc('functional_reverses_journal_entry_id') }}"
+      - name: functional_reversed_by_journal_entry_id
+        description: "{{ doc('functional_reversed_by_journal_entry_id') }}"
+      - name: is_debit_credit_reversed
+        description: "{{ doc('is_debit_credit_reversed') }}"
+      - name: is_sign_reversed
+        description: "{{ doc('is_sign_reversed') }}"
+
+  - name: workday_financial_management__general_ledger_by_period
+    description: >
+      Monthly general ledger rollup. One row per company, ledger account, ledger currency, and
+      calendar month, per source relation. Months with no journal activity are still present,
+      carrying the last known balance forward.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: general_ledger_by_period_id
+        description: >
+          Surrogate key derived from company_id, ledger_account_id, ledger_currency_id,
+          period_first_day, and source_relation.
+        tests:
+          - not_null
+          - unique
+      - name: company_id
+        description: "{{ doc('company_id') }}"
+        tests:
+          - not_null
+      - name: company_name
+        description: "{{ doc('company_name') }}"
+      - name: ledger_account_id
+        description: "{{ doc('ledger_account_id') }}"
+        tests:
+          - not_null
+      - name: ledger_account_name
+        description: "{{ doc('ledger_account_name') }}"
+      - name: ledger_account_type
+        description: >
+          {{ doc('ledger_account_type') }}
+
+          Null where the account code appears in more than one account set.
+      - name: ledger_currency_id
+        description: >
+          Identifier of the ledger (functional) currency every amount in this model is stated in.
+          Read from the company that owns the ledger. Null where the ledger is missing from the
+          source.
+      - name: ledger_currency_code
+        description: >
+          ISO code of the ledger (functional) currency, and the unit for period_net_change,
+          period_beginning_balance, and period_ending_balance. Null where the ledger is missing
+          from the source, in which case those rows group together.
+      - name: date_year
+        description: First day of the calendar year the period falls in.
+      - name: period_first_day
+        description: First day of the calendar month this row reports on.
+        tests:
+          - not_null
+      - name: period_last_day
+        description: Last day of the calendar month this row reports on.
+      - name: period_net_change
+        description: >
+          Net movement on the account within the period, the sum of the general ledger's
+          ledger_net_amount. Zero in months with no activity.
+      - name: period_beginning_balance
+        description: >
+          Cumulative balance at the start of the period, carried forward from the last month with
+          activity.
+      - name: period_ending_balance
+        description: >
+          Cumulative balance at the end of the period, carried forward across months with no
+          activity.
+
+  - name: workday_financial_management__budget_vs_actuals
+    description: >
+      Budget and actual activity paired on the dimensions they share, with variance and fiscal
+      year-to-date figures. One row per company, ledger account, currency, and fiscal period, per
+      source relation.
+
+      Workday stores budgets as business plans, and business plans are recorded against fiscal
+      periods rather than calendar months. This model is therefore grained on fiscal periods, which
+      is why its period columns are named fiscal_* and do not line up with the calendar months in
+      workday_financial_management__general_ledger_by_period. On a 4-4-5 or similar schedule a
+      fiscal period spans parts of two calendar months, so the two models are not joinable on
+      period. Join them on company and ledger account only, or use the fiscal_* columns the general
+      ledger carries at line grain.
+
+      Only periods where a budget or actual figure exists are emitted. Periods where an account has
+      neither are left out rather than padded with zeroes.
+
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: budget_vs_actuals_id
+        description: >
+          Surrogate key derived from company_id, ledger_account_id, currency_id, fiscal_period_id,
+          and source_relation.
+        tests:
+          - not_null
+          - unique
+      - name: company_id
+        description: "{{ doc('company_id') }}"
+        tests:
+          - not_null
+      - name: company_name
+        description: >
+          {{ doc('company_name') }}
+
+          Null where the plan references a company that is missing from the source.
+      - name: company_code
+        description: "{{ doc('company_code') }}"
+      - name: ledger_account_id
+        description: >
+          Reference to the ledger account budget and actuals are paired on. This is the identifier
+          the ledger account dimension is keyed by. Note that the general ledger exposes this same
+          value as ledger_account_code, not as its own ledger_account_id, which is a separate
+          identifier that resolves to nothing.
+        tests:
+          - not_null
+      - name: ledger_account_name
+        description: >
+          {{ doc('ledger_account_name') }}
+
+          Null where the account code appears in more than one account set. See DECISIONLOG.
+      - name: ledger_account_type
+        description: >
+          {{ doc('ledger_account_type') }}
+
+          Null where the account code appears in more than one account set.
+      - name: currency_id
+        description: >
+          Identifier of the currency both figures on the row are stated in. Currency is part of the
+          key, so budget and actuals recorded in different currencies stay as separate unpaired rows
+          rather than producing a variance across currencies.
+      - name: currency_code
+        description: "{{ doc('currency_code') }}"
+      - name: fiscal_schedule_code
+        description: "{{ doc('fiscal_schedule_code') }}"
+      - name: fiscal_year_name
+        description: >
+          {{ doc('fiscal_year_name') }}
+
+          This is the boundary the year-to-date columns accumulate within.
+      - name: fiscal_year_start_date
+        description: "{{ doc('fiscal_year_start_date') }}"
+      - name: fiscal_year_end_date
+        description: "{{ doc('fiscal_year_end_date') }}"
+      - name: fiscal_period_id
+        description: >
+          Identifier of the fiscal period this row reports on.
+        tests:
+          - not_null
+      - name: fiscal_month_name
+        description: "{{ doc('fiscal_posting_interval_code') }}"
+      - name: fiscal_month_start_date
+        description: "{{ doc('fiscal_month_start_date') }}"
+      - name: fiscal_month_end_date
+        description: "{{ doc('fiscal_month_end_date') }}"
+      - name: has_budget
+        description: >
+          Whether a budget figure exists for this combination. Distinguishes a budget of zero from
+          no budget at all, which budget_amount alone cannot.
+      - name: has_actuals
+        description: >
+          Whether actual activity exists for this combination. False on a budgeted account that saw
+          no posting in the period.
+      - name: budget_amount
+        description: >
+          Budgeted movement for the period, calculated as budgeted debits minus credits. Positive is
+          a debit, matching the general ledger's net_amount convention. Zero where no budget exists,
+          so read has_budget alongside it.
+      - name: actual_amount
+        description: >
+          Actual movement for the period, the sum of the general ledger's ledger_net_amount for the
+          lines whose accounting date falls in this fiscal period. Zero where no activity exists.
+      - name: variance_amount
+        description: >
+          actual_amount minus budget_amount. Whether a positive number is favourable depends on the
+          account: on an expense account it means overspend, on a revenue account it means
+          outperformance.
+      - name: variance_percent
+        description: >
+          variance_amount as a proportion of the budget's magnitude. Null where budget_amount is
+          zero, since there is no baseline to compare against.
+      - name: budget_amount_year_to_date
+        description: >
+          Running total of budget_amount within the fiscal year, through the end of this period.
+      - name: actual_amount_year_to_date
+        description: >
+          Running total of actual_amount within the fiscal year, through the end of this period.
+      - name: variance_amount_year_to_date
+        description: >
+          actual_amount_year_to_date minus budget_amount_year_to_date.
