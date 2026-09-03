@@ -245,8 +245,9 @@ Whether the company is currently active.
 {% enddocs %}
 
 {% docs fiscal_schedule_code %}
-Code of the fiscal schedule the company reports on. The connector syncs no fiscal calendar table,
-so you cannot resolve this code to period start and end dates.
+Code of the fiscal schedule the company reports on, for example Standard_Corporate_Schedule or
+May_April. Join it to fiscal_year to resolve the schedule, and from there to fiscal_period for
+period start and end dates.
 {% enddocs %}
 
 {% docs default_reporting_book_code %}
@@ -285,4 +286,146 @@ Display symbol of the currency.
 
 {% docs currency_precision %}
 Number of decimal places the currency is recorded to.
+{% enddocs %}
+
+{% docs business_plan_detail_id %}
+Unique identifier of the business plan. Workday stores budgets as business plans, so this is the
+budget equivalent of journal_entry_id.
+{% enddocs %}
+
+{% docs business_plan_detail_index %}
+Position of the plan within its parent record. The connector unpacks business plans from a nested
+structure, and in observed data this is always 0. It is carried and joined on anyway, so a tenant
+that does emit more than one stays correct.
+{% enddocs %}
+
+{% docs business_plan_reference_id %}
+Business key of the plan, distinct from the surrogate identifier in business_plan_detail_id.
+{% enddocs %}
+
+{% docs business_plan_structure_id %}
+Reference to the business plan structure, which defines the plan's shape and rules. The connector
+syncs no business plan structure table, so you cannot resolve this identifier to a name.
+{% enddocs %}
+
+{% docs organizing_dimension_id %}
+Reference to the dimension the plan is organized by. The connector syncs no table for this, so you
+cannot resolve this identifier to a name.
+{% enddocs %}
+
+{% docs plan_year %}
+Fiscal year the plan covers, as an integer. Together with fiscal_time_interval_id this places the
+plan on a fiscal period. A value of 0 means the plan carries no period at all and cannot be placed
+on a timeline.
+{% enddocs %}
+
+{% docs fiscal_time_interval_id %}
+Reference to the posting interval within the fiscal year the plan budgets for. This is the same
+identifier fiscal_period exposes as fiscal_posting_interval_id -- join on both this and the plan's
+year, because an interval identifies a position in the year and repeats across years.
+{% enddocs %}
+
+{% docs award_posting_interval_code %}
+Code of the award posting interval, used when the plan budgets against a grant award rather than a
+fiscal schedule.
+{% enddocs %}
+
+{% docs award_contract_id %}
+Reference to the award contract the plan budgets against, for grant accounting.
+{% enddocs %}
+
+{% docs award_proposal_code %}
+Code of the award proposal the plan budgets against, for grant accounting.
+{% enddocs %}
+
+{% docs project_budget_code %}
+Code of the project budget the plan belongs to, for project-based budgeting.
+{% enddocs %}
+
+{% docs business_plan_memo %}
+Free-text memo entered on the business plan header.
+{% enddocs %}
+
+{% docs business_plan_entry_line_index %}
+Position of the line within its business plan. Together with business_plan_detail_id and
+business_plan_detail_index this forms the grain of the business plan entry line table, and it is
+the key the budget worktag bridge joins on.
+{% enddocs %}
+
+{% docs business_plan_line_order %}
+Display ordering token of the line within the plan. A string rather than a number, and not used as
+a join key.
+{% enddocs %}
+
+{% docs business_plan_ledger_account_id %}
+Reference to the ledger account the budgeted amount applies to. This resolves against
+ledger_account, which is the same identifier space the journal line exposes as
+ledger_account_code -- that is what lets budget and actuals pair on account.
+{% enddocs %}
+
+{% docs ledger_account_summary_id %}
+Reference to the ledger account summary the budgeted amount applies to, when a plan budgets at a
+rollup level rather than an individual account.
+{% enddocs %}
+
+{% docs business_plan_debit_amount %}
+Budgeted debit amount on the line, in the plan's currency.
+{% enddocs %}
+
+{% docs business_plan_credit_amount %}
+Budgeted credit amount on the line, in the plan's currency.
+{% enddocs %}
+
+{% docs business_plan_entry_line_memo %}
+Free-text memo entered on the business plan line.
+{% enddocs %}
+
+{% docs fiscal_schedule_id %}
+Reference to the fiscal schedule the period or year belongs to. Resolve a company to its schedule
+through the company's fiscal_schedule_code.
+{% enddocs %}
+
+{% docs fiscal_year_name %}
+Name of the fiscal year, for example 2025. Part of the key that identifies a fiscal period.
+{% enddocs %}
+
+{% docs fiscal_posting_interval_id %}
+Reference to the posting interval, which is a position within the fiscal year rather than a
+specific period. The same interval repeats every year, so a period is identified by schedule, year,
+and interval together.
+{% enddocs %}
+
+{% docs fiscal_posting_interval_code %}
+Code of the posting interval, for example the name of the month or quarter it represents.
+{% enddocs %}
+
+{% docs fiscal_month_start_date %}
+First day of the fiscal period. On a 4-4-5 or similar schedule this does not fall on the first day
+of a calendar month.
+{% enddocs %}
+
+{% docs fiscal_month_end_date %}
+Last day of the fiscal period. On a 4-4-5 or similar schedule this does not fall on the last day of
+a calendar month, and a single fiscal period can span two calendar months.
+{% enddocs %}
+
+{% docs fiscal_year_id %}
+Unique identifier of the fiscal year.
+{% enddocs %}
+
+{% docs fiscal_year_code %}
+Code of the fiscal year.
+{% enddocs %}
+
+{% docs fiscal_year_number %}
+Numeric form of the fiscal year.
+{% enddocs %}
+
+{% docs fiscal_year_start_date %}
+First day of the fiscal year. This is the boundary year-to-date figures reset on, and it is not
+January 1 for a company on a non-calendar schedule.
+{% enddocs %}
+
+{% docs fiscal_year_end_date %}
+Last day of the fiscal year.
 {% enddocs %}

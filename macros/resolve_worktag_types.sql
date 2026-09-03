@@ -17,7 +17,7 @@
 {%- for worktag_type in configured_worktag_types -%}
     {%- if worktag_type is not none and worktag_type | trim != '' -%}
         {%- set column_name = dbt_utils.slugify(worktag_type | trim) -%}
-
+        
         {%- if column_name not in claimed_column_names -%}
             {%- do claimed_column_names.append(column_name) -%}
             {%- do resolved_worktag_types.append({'worktag_type': worktag_type | trim, 'column_name': column_name}) -%}

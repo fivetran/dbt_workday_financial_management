@@ -306,3 +306,191 @@ models:
         description: "{{ doc('currency_precision') }}"
       - name: _fivetran_synced
         description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__business_plan_detail
+    description: >
+      Each record represents the header of a business plan, which is how Workday stores budgets.
+      One row per plan, per company, per fiscal period. The budgeted amounts live on
+      stg_workday_financial_management__business_plan_entry_line.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: business_plan_detail_key
+        description: >
+          Surrogate key derived from business_plan_detail_id, business_plan_detail_index, and
+          source_relation.
+        tests:
+          - not_null
+          - unique
+      - name: business_plan_detail_id
+        description: "{{ doc('business_plan_detail_id') }}"
+        tests:
+          - not_null
+      - name: business_plan_detail_index
+        description: "{{ doc('business_plan_detail_index') }}"
+      - name: business_plan_reference_id
+        description: "{{ doc('business_plan_reference_id') }}"
+      - name: company_id
+        description: "{{ doc('company_id') }}"
+      - name: currency_id
+        description: "{{ doc('currency_id') }}"
+      - name: business_plan_structure_id
+        description: "{{ doc('business_plan_structure_id') }}"
+      - name: organizing_dimension_id
+        description: "{{ doc('organizing_dimension_id') }}"
+      - name: plan_year
+        description: "{{ doc('plan_year') }}"
+      - name: fiscal_time_interval_id
+        description: "{{ doc('fiscal_time_interval_id') }}"
+      - name: fiscal_posting_interval_code
+        description: "{{ doc('fiscal_posting_interval_code') }}"
+      - name: award_posting_interval_code
+        description: "{{ doc('award_posting_interval_code') }}"
+      - name: award_contract_id
+        description: "{{ doc('award_contract_id') }}"
+      - name: award_proposal_code
+        description: "{{ doc('award_proposal_code') }}"
+      - name: project_budget_code
+        description: "{{ doc('project_budget_code') }}"
+      - name: business_plan_memo
+        description: "{{ doc('business_plan_memo') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__business_plan_entry_line
+    description: >
+      Each record represents a single budgeted amount on a business plan, and this is the grain
+      budget is stored at. Workday records these as explicit debit and credit columns, the same way
+      it records journal entry lines.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: business_plan_entry_line_id
+        description: >
+          Surrogate key derived from business_plan_detail_id, business_plan_detail_index,
+          business_plan_entry_line_index, and source_relation.
+        tests:
+          - not_null
+          - unique
+      - name: business_plan_detail_id
+        description: "{{ doc('business_plan_detail_id') }}"
+        tests:
+          - not_null
+      - name: business_plan_detail_index
+        description: "{{ doc('business_plan_detail_index') }}"
+      - name: business_plan_entry_line_index
+        description: "{{ doc('business_plan_entry_line_index') }}"
+        tests:
+          - not_null
+      - name: line_order
+        description: "{{ doc('business_plan_line_order') }}"
+      - name: ledger_account_id
+        description: "{{ doc('business_plan_ledger_account_id') }}"
+      - name: ledger_account_summary_id
+        description: "{{ doc('ledger_account_summary_id') }}"
+      - name: debit_amount
+        description: "{{ doc('business_plan_debit_amount') }}"
+      - name: credit_amount
+        description: "{{ doc('business_plan_credit_amount') }}"
+      - name: business_plan_entry_line_memo
+        description: "{{ doc('business_plan_entry_line_memo') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__business_plan_line_worktag
+    description: >
+      Each record links a business plan entry line to one worktag applied to it. The relationship is
+      many-to-many, and structurally identical to
+      stg_workday_financial_management__journal_entry_line_worktag, so budget and actuals resolve
+      worktags through the same lookup.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: business_plan_line_worktag_id
+        description: >
+          Surrogate key derived from business_plan_detail_id, business_plan_detail_index,
+          business_plan_entry_line_index, worktag_id, and source_relation.
+        tests:
+          - not_null
+          - unique
+      - name: business_plan_detail_id
+        description: "{{ doc('business_plan_detail_id') }}"
+        tests:
+          - not_null
+      - name: business_plan_detail_index
+        description: "{{ doc('business_plan_detail_index') }}"
+      - name: business_plan_entry_line_index
+        description: "{{ doc('business_plan_entry_line_index') }}"
+        tests:
+          - not_null
+      - name: worktag_id
+        description: "{{ doc('worktag_id') }}"
+        tests:
+          - not_null
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__fiscal_period
+    description: >
+      Each record represents one accounting period of a fiscal schedule, with its start and end
+      dates. This is the period definition budgets are stored against. Note that a period is
+      identified by schedule, year, and posting interval together, because a posting interval names
+      a position in the year and repeats every year.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: fiscal_period_id
+        description: >
+          Surrogate key derived from fiscal_schedule_id, fiscal_year_name,
+          fiscal_posting_interval_id, and source_relation. The source carries no key of its own.
+        tests:
+          - not_null
+          - unique
+      - name: fiscal_schedule_id
+        description: "{{ doc('fiscal_schedule_id') }}"
+        tests:
+          - not_null
+      - name: fiscal_year_name
+        description: "{{ doc('fiscal_year_name') }}"
+      - name: fiscal_posting_interval_id
+        description: "{{ doc('fiscal_posting_interval_id') }}"
+      - name: fiscal_posting_interval_code
+        description: "{{ doc('fiscal_posting_interval_code') }}"
+      - name: fiscal_month_start_date
+        description: "{{ doc('fiscal_month_start_date') }}"
+      - name: fiscal_month_end_date
+        description: "{{ doc('fiscal_month_end_date') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"
+
+  - name: stg_workday_financial_management__fiscal_year
+    description: >
+      Each record represents one fiscal year of a fiscal schedule, with its start and end dates.
+      Resolves a company's fiscal_schedule_code to a schedule, and gives year-to-date figures the
+      boundary they reset on.
+    columns:
+      - name: source_relation
+        description: "{{ doc('source_relation') }}"
+      - name: fiscal_year_id
+        description: "{{ doc('fiscal_year_id') }}"
+        tests:
+          - not_null
+          - unique
+      - name: fiscal_schedule_id
+        description: "{{ doc('fiscal_schedule_id') }}"
+        tests:
+          - not_null
+      - name: fiscal_schedule_code
+        description: "{{ doc('fiscal_schedule_code') }}"
+      - name: fiscal_year_name
+        description: "{{ doc('fiscal_year_name') }}"
+      - name: fiscal_year_code
+        description: "{{ doc('fiscal_year_code') }}"
+      - name: fiscal_year_number
+        description: "{{ doc('fiscal_year_number') }}"
+      - name: fiscal_year_start_date
+        description: "{{ doc('fiscal_year_start_date') }}"
+      - name: fiscal_year_end_date
+        description: "{{ doc('fiscal_year_end_date') }}"
+      - name: _fivetran_synced
+        description: "{{ doc('fivetran_synced') }}"

@@ -18,4 +18,3 @@ We are so excited you decided to contribute to the Fivetran community dbt packag
 
 - [Community Pull Request Template](?expand=1&template=pull_request_template.md) (default)
 - [Maintainer Pull Request Template](?expand=1&template=maintainer_pull_request_template.md) (to be used by maintainers)
-

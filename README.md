@@ -14,13 +14,15 @@
 ## What does this dbt package do?
 This package models Workday Financial Management data from [Fivetran's Workday Financial Management connector](https://fivetran.com/docs/connectors/applications/workday-financial-management). It uses data in the format described by [this ERD](https://fivetran.com/docs/connectors/applications/workday-financial-management#schemainformation).
 
-The package produces a transaction-level general ledger and a monthly rollup of it, both ready for analysis. It:
+The package produces a transaction-level general ledger, a monthly rollup of it, and a budget vs actuals comparison, all ready for analysis. It:
 
-- Restricts both output models to posted journal entries, so canceled and errored journals do not contaminate your balances. The staging models keep the full journal history.
+- Restricts the output models to posted journal entries, so canceled and errored journals do not contaminate your balances. The staging models keep the full journal history.
 - Denormalizes journal header, company, ledger, ledger account, journal source, and currency context onto every journal entry line, so you do not have to join them back yourself.
 - Resolves Workday worktags, delivered and custom alike, into one column per worktag type — six by default, plus any you configure.
 - Produces a signed `net_amount` alongside the native debit and credit amounts.
 - Rolls activity up to a monthly grain with beginning balance, net change, and ending balance, including months with no journal activity.
+- Places every journal entry line on the fiscal period its company reports on, so you are not limited to calendar months.
+- Pairs budgeted amounts against actual activity by company, ledger account, and fiscal period, with variance and fiscal year-to-date figures.
 - Generates a comprehensive data dictionary of your source and modeled Workday Financial Management data through the [dbt docs site](https://fivetran.github.io/dbt_workday_financial_management/).
 
 <!--section="workday_financial_management_transformation_model"-->
@@ -31,7 +33,8 @@ The following table provides a detailed list of all models materialized within t
 | **model**                                              | **description**                                                                                                                                                                                                 |
 | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [workday_financial_management__general_ledger](https://fivetran.github.io/dbt_workday_financial_management/#!/model/model.workday_financial_management.workday_financial_management__general_ledger) | Each record represents a single journal entry line, enriched with journal, company, ledger, ledger account, journal source, currency, and worktag context. |
-| [workday_financial_management__general_ledger_by_period](https://fivetran.github.io/dbt_workday_financial_management/#!/model/model.workday_financial_management.workday_financial_management__general_ledger_by_period) | Each record represents one company, ledger account, and calendar month, with the beginning balance, net change, and ending balance for that month. |
+| [workday_financial_management__general_ledger_by_period](https://fivetran.github.io/dbt_workday_financial_management/#!/model/model.workday_financial_management.workday_financial_management__general_ledger_by_period) | Each record represents one company, ledger account, ledger currency, and calendar month, with the beginning balance, net change, and ending balance for that month. |
+| [workday_financial_management__budget_vs_actuals](https://fivetran.github.io/dbt_workday_financial_management/#!/model/model.workday_financial_management.workday_financial_management__budget_vs_actuals) | Each record represents one company, ledger account, currency, and fiscal period, with the budgeted amount, the actual amount, the variance between them, and fiscal year-to-date totals. |
 
 ### Example questions these models answer
 
@@ -44,6 +47,11 @@ The following table provides a detailed list of all models materialized within t
 - What is the month-end balance of each balance sheet account, by company?
 - How has net activity in an expense account trended over the last twelve months?
 - Which accounts had no activity in a given month?
+
+**`workday_financial_management__budget_vs_actuals`**
+- Which accounts are over or under budget this fiscal period, and by how much?
+- How does spend track against plan year to date, on our own fiscal calendar rather than the calendar year?
+- Where are we spending against accounts we never budgeted for?
 
 ## How do I use the dbt package?
 
@@ -98,14 +106,29 @@ vars:
 ### (Optional) Step 4: Additional configurations
 
 #### Disable models for non-existent sources
-This package reads ten source tables. Seven of them are required. The three worktag tables — `worktag`, `custom_worktag`, and `journal_entry_line_worktag` — are gated behind a single variable. If your Workday Financial Management connection does not sync them, or your tenant does not use worktags, add the following configuration to your root `dbt_project.yml` file:
+This package reads fifteen source tables. Seven of them are required, and the remaining eight are gated behind three variables. If your Workday Financial Management connection does not sync a group, or your tenant does not use that feature, set the matching variable to `false` in your root `dbt_project.yml` file.
+
+| **variable** | **source tables it gates** | **what turning it off does** |
+| ------------ | -------------------------- | ---------------------------- |
+| `workday_financial_management_using_worktags` | `worktag`, `custom_worktag`, `journal_entry_line_worktag`, `business_plan_entry_line_worktag` | Disables their staging models and the worktag pivot, and drops the worktag columns from `workday_financial_management__general_ledger`. |
+| `workday_financial_management_using_fiscal_calendar` | `fiscal_period`, `fiscal_year` | Drops the `fiscal_*` columns from `workday_financial_management__general_ledger`. Also disables `workday_financial_management__budget_vs_actuals`, which is grained on fiscal periods. |
+| `workday_financial_management_using_business_plans` | `business_plan_detail`, `business_plan_entry_line`, `business_plan_entry_line_worktag` | Disables their staging models and `workday_financial_management__budget_vs_actuals`. |
 
 ```yml
 vars:
     workday_financial_management_using_worktags: false
+    workday_financial_management_using_fiscal_calendar: false
+    workday_financial_management_using_business_plans: false
 ```
 
-This disables the staging models for all three tables and the worktag pivot, and drops the worktag columns from `workday_financial_management__general_ledger`. Every other model builds as normal.
+Every model not named above builds as normal.
+
+#### Understand which period each model uses
+`workday_financial_management__general_ledger_by_period` reports on **calendar months**. `workday_financial_management__budget_vs_actuals` reports on **fiscal periods**, because that is how Workday stores budgets.
+
+For most fiscal schedules these are the same thing — a `May_April` schedule shifts only the year boundary, not the month boundaries. On a 4-4-5 schedule they are not: a fiscal period straddles two calendar months, so no calendar-month row can carry a single fiscal period label and vice versa. That is why neither model carries the other's period columns.
+
+**Do not join the two models on period.** Join them on company and ledger account, and take the period from whichever model matches the calendar you report on. If you need a fiscal rollup of actuals for accounts that carry no budget, build it from `workday_financial_management__general_ledger`, which carries `fiscal_year_name`, `fiscal_year_start_date`, `fiscal_year_end_date`, and `fiscal_month_start_date` on every line.
 
 #### Change which journal entry statuses count as posted
 Both output models include only journal entries whose status is `POSTED`. If your Workday tenant uses different status values, add the following configuration to your root `dbt_project.yml` file:

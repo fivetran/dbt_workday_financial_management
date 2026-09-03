@@ -27,10 +27,11 @@ gl_monthly as (
         source_relation,
         company_id,
         ledger_account_id,
+        ledger_currency_id,
         cast({{ dbt.date_trunc("month", "accounting_date") }} as date) as period_first_day,
         sum(ledger_net_amount) as detail_net_change
     from general_ledger
-    {{ dbt_utils.group_by(4) }}
+    {{ dbt_utils.group_by(5) }}
 
 ),
 
@@ -40,6 +41,7 @@ period_rollup as (
         source_relation,
         company_id,
         ledger_account_id,
+        ledger_currency_id,
         period_first_day,
         period_net_change
     from by_period
@@ -52,6 +54,7 @@ compared as (
         coalesce(gl_monthly.source_relation, period_rollup.source_relation) as source_relation,
         coalesce(gl_monthly.company_id, period_rollup.company_id) as company_id,
         coalesce(gl_monthly.ledger_account_id, period_rollup.ledger_account_id) as ledger_account_id,
+        coalesce(gl_monthly.ledger_currency_id, period_rollup.ledger_currency_id) as ledger_currency_id,
         coalesce(gl_monthly.period_first_day, period_rollup.period_first_day) as period_first_day,
         gl_monthly.detail_net_change,
         period_rollup.period_net_change
@@ -61,6 +64,9 @@ compared as (
         on gl_monthly.source_relation = period_rollup.source_relation
         and gl_monthly.company_id = period_rollup.company_id
         and gl_monthly.ledger_account_id = period_rollup.ledger_account_id
+        -- Ledger currency is part of the rollup grain and is nullable, so nulls have to match nulls here
+        -- the same way they do in the model.
+        and coalesce(gl_monthly.ledger_currency_id, '') = coalesce(period_rollup.ledger_currency_id, '')
         and gl_monthly.period_first_day = period_rollup.period_first_day
 
 ),
@@ -71,6 +77,7 @@ final as (
         source_relation,
         company_id,
         ledger_account_id,
+        ledger_currency_id,
         period_first_day,
         detail_net_change,
         period_net_change,

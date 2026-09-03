@@ -1,4 +1,4 @@
--- One row per company, ledger account, and calendar month, per source relation.
+-- One row per company, ledger account, ledger currency, and calendar month, per source relation.
 -- All amounts are stated in the ledger (functional) currency named by ledger_currency_code.
 
 with general_ledger_balances as (
@@ -12,7 +12,7 @@ final as (
 
     select
         source_relation,
-        {{ dbt_utils.generate_surrogate_key(['company_id', 'ledger_account_id', 'period_first_day', 'source_relation']) }} as general_ledger_by_period_id,
+        {{ dbt_utils.generate_surrogate_key(['company_id', 'ledger_account_id', 'ledger_currency_id', 'period_first_day', 'source_relation']) }} as general_ledger_by_period_id,
         company_id,
         company_name,
         ledger_account_id,

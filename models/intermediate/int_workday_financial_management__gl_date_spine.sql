@@ -69,22 +69,39 @@ date_spine as (
 
 ),
 
-final as (
+-- Reduced to the distinct combinations before the cross join. Crossing the journal line detail with the
+-- spine first and deduplicating after produces the same rows, but materializes one per line per month.
+gl_company_account as (
 
     select distinct
-        general_ledger.source_relation,
-        general_ledger.company_id,
-        general_ledger.company_name,
-        general_ledger.ledger_account_id,
-        general_ledger.ledger_account_name,
-        general_ledger.ledger_account_type,
-        general_ledger.ledger_currency_id,
-        general_ledger.ledger_currency_code,
+        source_relation,
+        company_id,
+        company_name,
+        ledger_account_id,
+        ledger_account_name,
+        ledger_account_type,
+        ledger_currency_id,
+        ledger_currency_code
+    from general_ledger
+
+),
+
+final as (
+
+    select
+        gl_company_account.source_relation,
+        gl_company_account.company_id,
+        gl_company_account.company_name,
+        gl_company_account.ledger_account_id,
+        gl_company_account.ledger_account_name,
+        gl_company_account.ledger_account_type,
+        gl_company_account.ledger_currency_id,
+        gl_company_account.ledger_currency_code,
         date_spine.date_year,
         date_spine.period_first_day,
         date_spine.period_last_day,
         date_spine.period_index
-    from general_ledger
+    from gl_company_account
 
     cross join date_spine
 
