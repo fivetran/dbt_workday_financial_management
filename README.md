@@ -106,20 +106,20 @@ vars:
 ### (Optional) Step 4: Additional configurations
 
 #### Disable models for non-existent sources
-This package reads fifteen source tables. Seven of them are required, and the remaining eight are gated behind three variables. If your Workday Financial Management connection does not sync a group, or your tenant does not use that feature, set the matching variable to `false` in your root `dbt_project.yml` file.
+This package reads fifteen source tables. Ten of them are required, and the remaining five are gated behind two variables. If your Workday Financial Management connection does not sync a group, or your tenant does not use that feature, set the matching variable to `false` in your root `dbt_project.yml` file.
 
 | **variable** | **source tables it gates** | **what turning it off does** |
 | ------------ | -------------------------- | ---------------------------- |
-| `workday_financial_management_using_worktags` | `worktag`, `custom_worktag`, `journal_entry_line_worktag`, `business_plan_entry_line_worktag` | Disables their staging models and the worktag pivot, and drops the worktag columns from `workday_financial_management__general_ledger`. |
 | `workday_financial_management_using_fiscal_calendar` | `fiscal_period`, `fiscal_year` | Drops the `fiscal_*` columns from `workday_financial_management__general_ledger`. Also disables `workday_financial_management__budget_vs_actuals`, which is grained on fiscal periods. |
 | `workday_financial_management_using_business_plans` | `business_plan_detail`, `business_plan_entry_line`, `business_plan_entry_line_worktag` | Disables their staging models and `workday_financial_management__budget_vs_actuals`. |
 
 ```yml
 vars:
-    workday_financial_management_using_worktags: false
     workday_financial_management_using_fiscal_calendar: false
     workday_financial_management_using_business_plans: false
 ```
+
+The `worktag`, `custom_worktag`, and `journal_entry_line_worktag` tables are required. Their staging models always build. Whether any worktag reaches the general ledger is a separate choice, covered under [Configure worktag columns](#configure-worktag-columns).
 
 Every model not named above builds as normal.
 
@@ -128,7 +128,7 @@ Every model not named above builds as normal.
 
 For most fiscal schedules these are the same thing — a `May_April` schedule shifts only the year boundary, not the month boundaries. On a 4-4-5 schedule they are not: a fiscal period straddles two calendar months, so no calendar-month row can carry a single fiscal period label and vice versa. That is why neither model carries the other's period columns.
 
-**Do not join the two models on period.** Join them on company and ledger account, and take the period from whichever model matches the calendar you report on. If you need a fiscal rollup of actuals for accounts that carry no budget, build it from `workday_financial_management__general_ledger`, which carries `fiscal_year_name`, `fiscal_year_start_date`, `fiscal_year_end_date`, and `fiscal_month_start_date` on every line.
+**Do not join the two models on period.** Join them on company and ledger account: match `company_id` to `company_id`, and `ledger_account_id` in `workday_financial_management__budget_vs_actuals` to `ledger_account_code` in `workday_financial_management__general_ledger_by_period`. Take the period from whichever model matches the calendar you report on. If you need a fiscal rollup of actuals for accounts that carry no budget, build it from `workday_financial_management__general_ledger`, which carries `fiscal_year_name`, `fiscal_year_start_date`, `fiscal_year_end_date`, and `fiscal_month_start_date` on every line.
 
 #### Change which journal entry statuses count as posted
 Both output models include only journal entries whose status is `POSTED`. If your Workday tenant uses different status values, add the following configuration to your root `dbt_project.yml` file:
@@ -141,34 +141,41 @@ vars:
 The staging models are never filtered, so `stg_workday_financial_management__journal_entry` always carries the complete journal history.
 
 #### Configure worktag columns
-This package resolves your Workday worktags into one column per worktag type on `workday_financial_management__general_ledger`. Worktag types you do not name explicitly are left out.
+This package resolves your Workday worktags into one column per worktag type on `workday_financial_management__general_ledger`. **No worktag type is included by default.** A Workday tenant can define dozens of them, and which ones carry meaning is a question only you can answer, so you name the ones you want and the package adds a column for each.
 
-Six delivered worktag types are always included:
-
-| **worktag type** | **column** |
-| ---------------- | ---------- |
-| `Organization_Reference_ID` | `organization_reference_id` |
-| `Custom_Organization_Reference_ID` | `custom_organization_reference_id` |
-| `Cost_Center_Reference_ID` | `cost_center_reference_id` |
-| `Region_Reference_ID` | `region_reference_id` |
-| `Spend_Category_ID` | `spend_category_id` |
-| `Revenue_Category_ID` | `revenue_category_id` |
-
-Note that the connector reports worktag types using Workday's -ID naming rather than the display names in Workday's worktag documentation, so check your own `worktag` table's `attribute` column before adding a type. A type your organization does not use still produces a column; it is simply null.
-
-To add worktag types of your own, add the following configuration to your root `dbt_project.yml` file:
+Name them in your root `dbt_project.yml` file:
 
 ```yml
 vars:
-    workday_financial_management__worktag_types: ['Project_Reference_ID', 'Fund_Reference_ID', 'Grant_Reference_ID']
+    workday_financial_management__worktag_types: ['Cost_Center_Reference_ID', 'Spend_Category_ID', 'Project_Reference_ID']
 ```
 
-Each value must match either the `attribute` column of your `worktag` table or the `configuration_code` column of your `custom_worktag` table, so you can name delivered and custom worktags in the same list. Matching is case-insensitive. Each value becomes its own column, named after the value slugified — `Fund_Reference_ID` becomes `fund_reference_id`. The six defaults above are always kept, whatever you put here.
+Each value must match either the `attribute` column of your `worktag` table or the `configuration_code` column of your `custom_worktag` table, so you can name delivered and custom worktags in the same list. Matching is case-insensitive. Each value becomes its own column, named after the value slugified — `Fund_Reference_ID` becomes `fund_reference_id`.
+
+The connector reports worktag types using Workday's -ID naming rather than the display names in Workday's worktag documentation, so check your own `worktag` table's `attribute` column before adding a type. A type your organization does not use still produces a column; it is simply null.
+
+Leave the list empty and the general ledger carries no worktag columns, and `int_workday_financial_management__worktags_pivoted` is not built.
 
 Two notes on the resulting columns:
 
 - A journal line can carry multiple worktags of the same type, with different values. The column holds every value, joined by ` | `.
 - If a custom worktag type shares a name with a column the model already produces, we prefix the worktag column with `pivoted_`.
+
+#### Choose the worktag dimensions on budget vs actuals
+`workday_financial_management__budget_vs_actuals` carries worktags too, but they work differently there. On the general ledger a worktag type is a descriptive column. On budget vs actuals it is part of the grain, because the model sums amounts and anything you want to see has to be grouped by.
+
+As on the general ledger, **no worktag type is included by default.** Leave the list empty and the model is grained on company, ledger account, currency, and fiscal period alone. Name the types you want in your root `dbt_project.yml` file:
+
+```yml
+vars:
+    workday_financial_management__budget_worktag_types: ['Cost_Center_Reference_ID', 'Spend_Category_ID', 'Revenue_Category_ID']
+```
+
+The values work the same way as `workday_financial_management__worktag_types`. The three above are a sensible starting point — they are the dimensions a budget is built on: who spends, what is bought, and what is earned.
+
+Add types deliberately, because each one costs you comparisons. A budget line and an actual line pair only when they agree on every part of the key. Where one side carries a worktag and the other does not, what would have been a single paired row becomes two unpaired rows instead, reading as unspent budget next to unbudgeted spend. Neither is true. Region is the clearest example in Workday: it is usually recorded far more consistently on actual spend than on plans, which is why it is an add-on rather than a default.
+
+Organization worktags cannot be used here at all. Workday allows a line to carry several of them at once — commonly a cost center, a region, a pay group, and an industry — and nothing in the connector says which is which. Using one as part of the key would split that line's amount across rows. Naming `Organization_Reference_ID` or `Custom_Organization_Reference_ID` fails the run with an error rather than quietly producing wrong totals. Use `Cost_Center_Reference_ID` or `Region_Reference_ID` instead; they hold the same values and carry one per line.
 
 #### Change the build schema
 By default, this package builds the Workday Financial Management staging models within a schema titled (<target_schema> + `_workday_financial_management_staging`), the intermediate models within (<target_schema> + `_workday_financial_management_intermediate`), and the final models within (<target_schema> + `_workday_financial_management_reports`) in your destination. If this is not where you would like your data to be written, add the following configuration to your root `dbt_project.yml` file:

@@ -3,7 +3,7 @@
     enabled=var('fivetran_validation_tests_enabled', false)
 ) }}
 
--- Guards the two assumptions the fiscal calendar joins rest on.
+-- Guards the assumptions the fiscal calendar joins rest on.
 
 with fiscal_period as (
 
@@ -43,6 +43,70 @@ schedule_by_code as (
 
 ),
 
+fiscal_year_bounds as (
+
+    select
+        source_relation,
+        fiscal_schedule_id,
+        fiscal_year_name,
+        max(fiscal_month_end_date) as fiscal_year_end_date
+    from fiscal_period
+    {{ dbt_utils.group_by(3) }}
+
+),
+
+-- A fiscal year is numbered by the calendar year it ends in.
+fiscal_year_derived as (
+
+    select
+        source_relation,
+        fiscal_schedule_id,
+        fiscal_year_name,
+        cast(extract(year from fiscal_year_end_date) as {{ dbt.type_int() }}) as fiscal_year_number
+    from fiscal_year_bounds
+
+),
+
+-- The year a plan is placed on: declared when the tenant populates it, derived otherwise.
+fiscal_year_resolved as (
+
+    select
+        fiscal_year_derived.source_relation,
+        fiscal_year_derived.fiscal_schedule_id,
+        fiscal_year_derived.fiscal_year_name,
+        coalesce(fiscal_year.fiscal_year_number, fiscal_year_derived.fiscal_year_number) as fiscal_year_number
+    from fiscal_year_derived
+
+    left join fiscal_year
+        on fiscal_year_derived.fiscal_schedule_id = fiscal_year.fiscal_schedule_id
+        and fiscal_year_derived.fiscal_year_name = fiscal_year.fiscal_year_name
+        and fiscal_year_derived.source_relation = fiscal_year.source_relation
+
+),
+
+-- A tenant's declared fiscal year number should agree with the year its own periods end in. When
+-- the two disagree, either the tenant numbers its years against convention or periods are missing
+-- from the sync. Both place a budget on the wrong fiscal year.
+year_number_conflicts as (
+
+    select
+        'the declared fiscal year number disagrees with the year its periods end in' as failure_reason,
+        fiscal_year.source_relation,
+        fiscal_year.fiscal_schedule_id,
+        cast(null as {{ dbt.type_string() }}) as fiscal_period_id,
+        fiscal_year.fiscal_year_name as conflicting_key
+    from fiscal_year
+
+    join fiscal_year_derived
+        on fiscal_year.fiscal_schedule_id = fiscal_year_derived.fiscal_schedule_id
+        and fiscal_year.fiscal_year_name = fiscal_year_derived.fiscal_year_name
+        and fiscal_year.source_relation = fiscal_year_derived.source_relation
+
+    where fiscal_year.fiscal_year_number is not null
+        and fiscal_year.fiscal_year_number != fiscal_year_derived.fiscal_year_number
+
+),
+
 overlapping_periods as (
 
     select
@@ -74,8 +138,13 @@ plan_schedule_conflicts as (
 
     join fiscal_period
         on business_plan_detail.fiscal_time_interval_id = fiscal_period.fiscal_posting_interval_id
-        and cast(business_plan_detail.plan_year as {{ dbt.type_string() }}) = fiscal_period.fiscal_year_name
         and business_plan_detail.source_relation = fiscal_period.source_relation
+
+    join fiscal_year_resolved
+        on fiscal_period.fiscal_schedule_id = fiscal_year_resolved.fiscal_schedule_id
+        and fiscal_period.fiscal_year_name = fiscal_year_resolved.fiscal_year_name
+        and fiscal_period.source_relation = fiscal_year_resolved.source_relation
+        and business_plan_detail.plan_year = fiscal_year_resolved.fiscal_year_number
 
     join company
         on business_plan_detail.company_id = company.company_id
@@ -98,6 +167,11 @@ final as (
 
     select *
     from plan_schedule_conflicts
+
+    union all
+
+    select *
+    from year_number_conflicts
 
 )
 

@@ -22,6 +22,7 @@ gl_period_balance as (
         company_id,
         company_name,
         ledger_account_id,
+        ledger_account_code,
         ledger_account_name,
         ledger_account_type,
         ledger_currency_id,
@@ -30,7 +31,7 @@ gl_period_balance as (
         cast({{ dbt.date_trunc("month", "accounting_date") }} as date) as date_month,
         sum(ledger_net_amount) as period_balance
     from general_ledger
-    {{ dbt_utils.group_by(10) }}
+    {{ dbt_utils.group_by(11) }}
 
 ),
 
@@ -52,6 +53,7 @@ gl_beginning_balance as (
         company_id,
         company_name,
         ledger_account_id,
+        ledger_account_code,
         ledger_account_name,
         ledger_account_type,
         ledger_currency_id,
@@ -72,6 +74,7 @@ gl_patch as (
         gl_accounting_periods.company_id,
         gl_accounting_periods.company_name,
         gl_accounting_periods.ledger_account_id,
+        gl_accounting_periods.ledger_account_code,
         gl_accounting_periods.ledger_account_name,
         gl_accounting_periods.ledger_account_type,
         gl_accounting_periods.ledger_currency_id,
@@ -89,10 +92,11 @@ gl_patch as (
     from gl_accounting_periods
 
     left join gl_beginning_balance
-        on gl_beginning_balance.company_id = gl_accounting_periods.company_id
-        and gl_beginning_balance.ledger_account_id = gl_accounting_periods.ledger_account_id
-        -- A journal entry whose ledger does not resolve to a company has no ledger currency. Those rows
-        -- group with each other rather than dropping out, so the key is compared through coalesce.
+        -- Every part of the key can be null. A journal entry whose ledger does not resolve to a company
+        -- has no ledger currency, for example. Null rows group with each other rather than losing their
+        -- activity, so each key part is compared through coalesce.
+        on coalesce(gl_beginning_balance.company_id, '') = coalesce(gl_accounting_periods.company_id, '')
+        and coalesce(gl_beginning_balance.ledger_account_id, '') = coalesce(gl_accounting_periods.ledger_account_id, '')
         and coalesce(gl_beginning_balance.ledger_currency_id, '') = coalesce(gl_accounting_periods.ledger_currency_id, '')
         and gl_beginning_balance.source_relation = gl_accounting_periods.source_relation
         and gl_beginning_balance.date_month = gl_accounting_periods.period_first_day
@@ -122,6 +126,7 @@ final as (
         company_id,
         company_name,
         ledger_account_id,
+        ledger_account_code,
         ledger_account_name,
         ledger_account_type,
         ledger_currency_id,

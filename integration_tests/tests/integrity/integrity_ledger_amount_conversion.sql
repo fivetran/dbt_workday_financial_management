@@ -31,6 +31,11 @@ converted as (
     from general_ledger
     where currency_rate is not null
       and currency_rate != 0
+      -- A revaluation entry restates what an existing balance is worth in the functional currency.
+      -- The transaction amount does not change, so Workday records zero for it and puts the gain or
+      -- loss in the ledger amount alone. There is nothing to convert on these lines, and checking
+      -- them compares a real ledger amount against zero times the rate.
+      and (coalesce(debit_amount, 0) != 0 or coalesce(credit_amount, 0) != 0)
 
 ),
 
@@ -38,8 +43,13 @@ final as (
 
     select *
     from converted
-    where debit_difference > greatest(0.01, abs(coalesce(ledger_debit_amount, 0)) * 0.0005)
-       or credit_difference > greatest(0.01, abs(coalesce(ledger_credit_amount, 0)) * 0.0005)
+    -- A row fails on whichever threshold it crosses first. The percentage catches a wrong rate on a
+    -- line of any size, and is wide enough to let through the rate drift that is normal on expense
+    -- reports, where the amount converts at the rate on the expense date rather than the rate
+    -- recorded on the line. The flat amount catches a difference big enough to matter on its own,
+    -- even where it is a small share of a large line.
+    where debit_difference > least(greatest(0.01, abs(coalesce(ledger_debit_amount, 0)) * 0.05), 1000)
+       or credit_difference > least(greatest(0.01, abs(coalesce(ledger_credit_amount, 0)) * 0.05), 1000)
 
 )
 

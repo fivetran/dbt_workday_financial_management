@@ -1,10 +1,11 @@
-{%- set using_worktags = var('workday_financial_management_using_worktags', True) -%}
-
 {%- set using_fiscal_calendar = var('workday_financial_management_using_fiscal_calendar', True) -%}
 
 {%- set posted_statuses = var('workday_financial_management__posted_statuses', ['POSTED']) -%}
 
-{%- set worktag_types = workday_financial_management.resolve_worktag_types() if using_worktags else [] %}
+{#- No worktag type is included by default, so the worktag join and columns appear only once you name one in workday_financial_management__worktag_types. -#}
+{%- set worktag_types = workday_financial_management.resolve_worktag_types() -%}
+
+{%- set using_worktags = worktag_types | length > 0 %}
 
 -- One row per journal entry line, per source relation.
 
@@ -183,7 +184,7 @@ joined as (
         company.is_debit_credit_reversed,
         company.is_sign_reversed
 
-        {% if using_worktags and worktag_types | length > 0 %}
+        {% if using_worktags %}
             -- Every non-worktag column produced by this CTE. A worktag type can be named  after one of them, so any collision gets a pivoted_ prefix rather than silently producing a duplicate column name.
             
             {%- set line_columns = ['source_relation', 'general_ledger_id', 'journal_entry_id', 'journal_entry_line_index', 'budget_date', 'line_company_id', 'ledger_account_id', 'ledger_account_code', 'account_set_name', 'currency_id', 'currency_rate', 'debit_amount', 'credit_amount', 'net_amount', 'ledger_debit_amount', 'ledger_credit_amount', 'ledger_net_amount', 'quantity', 'journal_line_number', 'line_order', 'journal_entry_line_memo', 'exclude_from_spend_report'] -%}
@@ -246,14 +247,7 @@ joined as (
         and journal_entry_line.source_relation = pivoted_worktags.source_relation
     {% endif %}
 
-),
-
-final as (
-
-    select *
-    from joined
-
 )
 
 select *
-from final
+from joined

@@ -30,7 +30,9 @@ final as (
         fiscal_schedule_code,
         cast(fiscal_year_name as {{ dbt.type_string() }}) as fiscal_year_name,
         fiscal_year_code,
-        fiscal_year_number,
+        -- The staging macro declares this a float as a fallback for a missing column, not as a
+        -- converter, so the cast has to be explicit. It is compared to a plan's integer year.
+        cast(fiscal_year_number as {{ dbt.type_int() }}) as fiscal_year_number,
         fiscal_year_start_date,
         fiscal_year_end_date,
         _fivetran_synced

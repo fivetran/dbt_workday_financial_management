@@ -45,14 +45,14 @@ seeds:
         accounting_date: date
         transaction_date: date
         creation_date: timestamp
-        journal_sequence_number: "{{ 'int64' if target.type == 'bigquery' else 'bigint' }}"
+        journal_sequence_number: "{{ 'string' if target.type in ('bigquery', 'databricks', 'spark') else 'varchar' }}"
         total_ledger_debits: "{{ 'float64' if target.type == 'bigquery' else 'float' }}"
         total_ledger_credits: "{{ 'float64' if target.type == 'bigquery' else 'float' }}"
     journal_entry_line:
       +column_types:
         index: "{{ 'int64' if target.type == 'bigquery' else 'bigint' }}"
-        line_order: "{{ 'int64' if target.type == 'bigquery' else 'bigint' }}"
-        journal_line_number: "{{ 'int64' if target.type == 'bigquery' else 'bigint' }}"
+        line_order: "{{ 'string' if target.type in ('bigquery', 'databricks', 'spark') else 'varchar' }}"
+        journal_line_number: "{{ 'float64' if target.type == 'bigquery' else 'float' }}"
         debit_amount: "{{ 'float64' if target.type == 'bigquery' else 'float' }}"
         credit_amount: "{{ 'float64' if target.type == 'bigquery' else 'float' }}"
         ledger_debit_amount: "{{ 'float64' if target.type == 'bigquery' else 'float' }}"
@@ -77,7 +77,7 @@ seeds:
         keep_debit_credit_and_reverse_sign: boolean
     currency:
       +column_types:
-        precision: "{{ 'int64' if target.type == 'bigquery' else 'bigint' }}"
+        precision: "{{ 'float64' if target.type == 'bigquery' else 'float' }}"
     business_plan_detail:
       +column_types:
         index: "{{ 'int64' if target.type == 'bigquery' else 'bigint' }}"

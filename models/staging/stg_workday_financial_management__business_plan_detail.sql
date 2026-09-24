@@ -33,7 +33,7 @@ final as (
         cast(currency_id as {{ dbt.type_string() }}) as currency_id,
         cast(business_plan_structure_id as {{ dbt.type_string() }}) as business_plan_structure_id,
         cast(organizing_dimension_id as {{ dbt.type_string() }}) as organizing_dimension_id,
-        year as plan_year,
+        cast(year as {{ dbt.type_int() }}) as plan_year,
         cast(fiscal_time_interval_id as {{ dbt.type_string() }}) as fiscal_time_interval_id,
         fiscal_posting_interval_code,
         award_posting_interval_code,

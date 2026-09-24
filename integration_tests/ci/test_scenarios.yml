@@ -17,11 +17,14 @@ test_scenarios:
     vars: {}
     include_incremental: false
 
-  # Exercises the disabled path: the three worktag staging models and the pivot are turned off,
-  # and the general ledger builds without its worktag columns.
-  - name: "Worktags disabled"
+  # The Default scenario names no worktag types, so it already covers the empty path: the pivot is
+  # not built and the general ledger carries no worktag columns. This scenario covers the other
+  # side -- the pivot builds, and Organization_Reference_ID exercises the listagg that holds
+  # several values on one line.
+  - name: "Worktag types configured"
     vars:
-      workday_financial_management_using_worktags: false
+      workday_financial_management__worktag_types: ['Organization_Reference_ID', 'Cost_Center_Reference_ID', 'Region_Reference_ID', 'Spend_Category_ID', 'Revenue_Category_ID', 'Campaign']
+      workday_financial_management__budget_worktag_types: ['Cost_Center_Reference_ID', 'Spend_Category_ID', 'Revenue_Category_ID']
     include_incremental: false
 
   # Seed data carries one UNPOSTED entry alongside 169 POSTED ones, so widening this actually

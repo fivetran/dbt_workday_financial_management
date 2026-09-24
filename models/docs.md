@@ -429,3 +429,18 @@ January 1 for a company on a non-calendar schedule.
 {% docs fiscal_year_end_date %}
 Last day of the fiscal year.
 {% enddocs %}
+
+{% docs cost_center_reference_id %}
+Cost center the line is tagged with, as a worktag value. Null where the line carries no cost
+center.
+{% enddocs %}
+
+{% docs spend_category_id %}
+Spend category the line is tagged with, as a worktag value. Null where the line carries no spend
+category, which includes every line that records revenue rather than spend.
+{% enddocs %}
+
+{% docs revenue_category_id %}
+Revenue category the line is tagged with, as a worktag value. Null where the line carries no
+revenue category, which includes every line that records spend rather than revenue.
+{% enddocs %}

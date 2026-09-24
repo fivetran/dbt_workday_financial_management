@@ -1,5 +1,3 @@
-{{ config(enabled=var('workday_financial_management_using_worktags', True)) }}
-
 {{
     fivetran_utils.union_connections(
         connection_dictionary='workday_financial_management_sources',

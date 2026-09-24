@@ -1,5 +1,3 @@
-{{ config(enabled=var('workday_financial_management_using_worktags', True)) }}
-
 with base as (
 
     select *

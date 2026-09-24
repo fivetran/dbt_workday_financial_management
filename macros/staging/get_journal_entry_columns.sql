@@ -18,7 +18,7 @@
     {"name": "id", "datatype": dbt.type_string()},
     {"name": "journal_entry_status", "datatype": dbt.type_string()},
     {"name": "journal_number", "datatype": dbt.type_string()},
-    {"name": "journal_sequence_number", "datatype": dbt.type_int()},
+    {"name": "journal_sequence_number", "datatype": dbt.type_string()},
     {"name": "journal_source_id", "datatype": dbt.type_string()},
     {"name": "last_updated_date", "datatype": dbt.type_timestamp()},
     {"name": "ledger_id", "datatype": dbt.type_string()},

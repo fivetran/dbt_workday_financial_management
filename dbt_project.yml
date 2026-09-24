@@ -26,16 +26,17 @@ vars:
   # different status values; the staging models always carry the full journal history.
   workday_financial_management__posted_statuses: ['POSTED']
 
-  # Gates the three worktag source tables: worktag, custom_worktag, and journal_entry_line_worktag.
-  # Set to false to disable their staging models and the worktag pivot, and to drop the worktag
-  # columns from the general ledger.
-  workday_financial_management_using_worktags: true
-
-  # Worktag types to add as columns on the general ledger, on top of the six delivered types the
-  # package always includes. Values must match your worktag table's attribute -- or, for custom
-  # worktags, your custom_worktag table's configuration_code -- and are matched case-insensitively.
-  # See the macro resolve_worktag_types for the types included by default.
+  # Worktag types to add as columns on the general ledger. No type is included by default, so the
+  # general ledger carries no worktag columns until you name one here. Values must match your
+  # worktag table's attribute -- or, for custom worktags, your custom_worktag table's
+  # configuration_code -- and are matched case-insensitively.
   workday_financial_management__worktag_types: []
+
+  # Worktag types to add to the budget vs actuals grain. No type is included by default. Unlike the
+  # general ledger, a type named here is part of the key, so it splits a budget row away from the
+  # actual it would otherwise have paired with wherever only one side records it. Organization
+  # worktag types are refused, because Workday lets a line carry several at once.
+  workday_financial_management__budget_worktag_types: []
 
   # Gates the two fiscal calendar source tables: fiscal_period and fiscal_year. Set to false if you
   # do not sync them, which drops the fiscal_* columns from the general ledger. Budget vs actuals

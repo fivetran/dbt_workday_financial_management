@@ -16,6 +16,7 @@ final as (
         company_id,
         company_name,
         ledger_account_id,
+        ledger_account_code,
         ledger_account_name,
         ledger_account_type,
         ledger_currency_id,

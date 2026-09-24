@@ -62,10 +62,10 @@ compared as (
 
     full outer join period_rollup
         on gl_monthly.source_relation = period_rollup.source_relation
-        and gl_monthly.company_id = period_rollup.company_id
-        and gl_monthly.ledger_account_id = period_rollup.ledger_account_id
-        -- Ledger currency is part of the rollup grain and is nullable, so nulls have to match nulls here
-        -- the same way they do in the model.
+        -- Every part of the rollup grain is nullable, so nulls have to match nulls here the same way they
+        -- do in the model.
+        and coalesce(gl_monthly.company_id, '') = coalesce(period_rollup.company_id, '')
+        and coalesce(gl_monthly.ledger_account_id, '') = coalesce(period_rollup.ledger_account_id, '')
         and coalesce(gl_monthly.ledger_currency_id, '') = coalesce(period_rollup.ledger_currency_id, '')
         and gl_monthly.period_first_day = period_rollup.period_first_day
 

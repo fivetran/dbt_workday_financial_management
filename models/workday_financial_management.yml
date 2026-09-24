@@ -190,6 +190,13 @@ models:
         description: "{{ doc('ledger_account_id') }}"
         tests:
           - not_null
+      - name: ledger_account_code
+        description: >
+          {{ doc('ledger_account_code') }}
+
+          Use this column, with company_id, to join to
+          workday_financial_management__budget_vs_actuals, where the same value is named
+          ledger_account_id.
       - name: ledger_account_name
         description: "{{ doc('ledger_account_name') }}"
       - name: ledger_account_type
@@ -231,19 +238,17 @@ models:
   - name: workday_financial_management__budget_vs_actuals
     description: >
       Budget and actual activity paired on the dimensions they share, with variance and fiscal
-      year-to-date figures. One row per company, ledger account, currency, and fiscal period, per
-      source relation.
+      year-to-date figures. One row per company, ledger account, currency, fiscal period, and
+      configured worktag dimension, per source relation. No worktag type is configured by default,
+      so out of the box the grain is company, ledger account, currency, and fiscal period. Each
+      type named in workday_financial_management__budget_worktag_types adds a column and becomes
+      part of the grain. Only periods holding a budget or actual figure are emitted. Budget from
+      plans that name no company is kept in an unassigned company bucket, flagged by has_company.
 
-      Workday stores budgets as business plans, and business plans are recorded against fiscal
-      periods rather than calendar months. This model is therefore grained on fiscal periods, which
-      is why its period columns are named fiscal_* and do not line up with the calendar months in
-      workday_financial_management__general_ledger_by_period. On a 4-4-5 or similar schedule a
-      fiscal period spans parts of two calendar months, so the two models are not joinable on
-      period. Join them on company and ledger account only, or use the fiscal_* columns the general
-      ledger carries at line grain.
-
-      Only periods where a budget or actual figure exists are emitted. Periods where an account has
-      neither are left out rather than padded with zeroes.
+      Periods here are fiscal, not calendar, so they do not line up with
+      workday_financial_management__general_ledger_by_period. Join the two models on company and
+      ledger account rather than on period: company_id to company_id, and ledger_account_id here to
+      ledger_account_code there.
 
     columns:
       - name: source_relation
@@ -251,21 +256,34 @@ models:
       - name: budget_vs_actuals_id
         description: >
           Surrogate key derived from company_id, ledger_account_id, currency_id, fiscal_period_id,
-          and source_relation.
+          source_relation, and each configured worktag dimension.
         tests:
           - not_null
           - unique
       - name: company_id
-        description: "{{ doc('company_id') }}"
+        description: >
+          {{ doc('company_id') }}
+
+          Null on the unassigned company bucket, which holds budget from business plans that name
+          no company. The not_null test warns rather than fails, so you can see how much budget
+          lands there.
         tests:
-          - not_null
+          - not_null:
+              config:
+                severity: warn
       - name: company_name
         description: >
           {{ doc('company_name') }}
 
-          Null where the plan references a company that is missing from the source.
+          Set to Unassigned where company_id is null. Null where the plan references a company that
+          is missing from the source.
       - name: company_code
         description: "{{ doc('company_code') }}"
+      - name: has_company
+        description: >
+          Whether this row belongs to a company. False on the unassigned company bucket. A journal
+          line with no company has no fiscal period, so actuals do not reach this bucket and its
+          rows carry budget only. Read them as budget totals, not as a variance.
       - name: ledger_account_id
         description: >
           Reference to the ledger account budget and actuals are paired on. This is the identifier
