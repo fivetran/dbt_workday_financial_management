@@ -1,0 +1,113 @@
+name: Bug Report
+description: Report a bug with this dbt package
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please search existing issues before submitting a new one.
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Configure package with '...'
+        2. Run 'dbt run'
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant error logs
+      description: Please copy and paste any relevant log output.
+      render: shell
+    validations:
+      required: false
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Possible solution
+      description: If you have a suggestion for how to fix the bug, describe it here.
+    validations:
+      required: false
+  - type: textarea
+    id: dbt-config
+    attributes:
+      label: dbt project config
+      description: Please provide the relevant sections of your `dbt_project.yml`.
+      render: yaml
+    validations:
+      required: true
+  - type: textarea
+    id: packages
+    attributes:
+      label: Package versions from packages.yml
+      description: Please provide your `packages.yml` contents.
+      render: yaml
+    validations:
+      required: true
+  - type: checkboxes
+    id: database
+    attributes:
+      label: Database type
+      description: Which database are you using?
+      options:
+        - label: BigQuery
+        - label: Snowflake
+        - label: Redshift
+        - label: Databricks
+        - label: PostgreSQL
+    validations:
+      required: true
+  - type: dropdown
+    id: orchestration
+    attributes:
+      label: Orchestration type
+      options:
+        - Quickstart
+        - Fivetran Transformations for dbt Core
+        - dbt Cloud
+        - dbt Core (local)
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: dbt-version
+    attributes:
+      label: dbt version
+      placeholder: e.g., 1.8.0
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here.
+    validations:
+      required: false
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Are you interested in contributing a fix?
+      options:
+        - "Yes, I'd like to open a PR"
+        - "Yes, but I'd need guidance"
+        - "No"
+    validations:
+      required: true
