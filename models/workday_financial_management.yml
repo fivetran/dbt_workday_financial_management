@@ -50,7 +50,7 @@ models:
         description: >
           {{ doc('fiscal_schedule_code') }}
 
-          Present only when workday_financial_management_using_fiscal_calendar is enabled.
+          Present only when workday_financial_management__using_fiscal_calendar is enabled.
       - name: fiscal_year_name
         description: >
           Fiscal year the line's accounting date falls in, on the schedule its company reports on.

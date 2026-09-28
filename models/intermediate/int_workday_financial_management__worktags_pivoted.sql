@@ -29,7 +29,7 @@ line_worktags as (
         worktag.worktag_value
     from journal_entry_line_worktag
 
-    join worktag
+    inner join worktag
         on journal_entry_line_worktag.worktag_id = worktag.worktag_id
         and journal_entry_line_worktag.source_relation = worktag.source_relation
 

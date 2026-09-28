@@ -145,8 +145,7 @@ Reference to the ledger account the line posts to.
 {% enddocs %}
 
 {% docs ledger_account_code %}
-Code of the ledger account, denormalized onto the journal line. The ledger account table does not
-carry this code, so the line is the only place it is available.
+Code of the ledger account the line posts to. Matches ledger_account_id on the ledger account table.
 {% enddocs %}
 
 {% docs ledger_account_name %}

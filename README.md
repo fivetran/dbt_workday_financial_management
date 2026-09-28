@@ -1,15 +1,21 @@
 <!--section="workday_financial_management_transformation_model"-->
-# Workday Financial Management Transformation dbt Package ([Docs](https://fivetran.github.io/dbt_workday_financial_management/))
+# Workday Financial Management dbt Package
 
-<p align="left">
-    <a alt="License"
-        href="https://github.com/fivetran/dbt_workday_financial_management/blob/main/LICENSE">
-        <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" /></a>
-    <a alt="dbt-core">
-        <img src="https://img.shields.io/badge/dbt_Core%E2%84%A2%20version->=1.3.0%20<3.0.0-orange.svg" /></a>
-    <a alt="Maintained by Fivetran">
-        <img src="https://img.shields.io/badge/Maintained%20by-Fivetran-blue.svg" /></a>
-</p>
+This dbt package transforms data from Fivetran's Workday Financial Management connector into analytics-ready tables.
+
+## Resources
+
+- Number of materialized models¹: 33
+- Connector documentation
+  - [Workday Financial Management connector documentation](https://fivetran.com/docs/connectors/applications/workday-financial-management)
+  - [Workday Financial Management ERD](https://fivetran.com/docs/connectors/applications/workday-financial-management#schemainformation)
+- dbt package documentation
+  - [GitHub repository](https://github.com/fivetran/dbt_workday_financial_management)
+  - [dbt Docs](https://fivetran.github.io/dbt_workday_financial_management/#!/overview)
+  - [DAG](https://fivetran.github.io/dbt_workday_financial_management/#!/overview?g_v=1)
+  - [Changelog](https://github.com/fivetran/dbt_workday_financial_management/blob/main/CHANGELOG.md)
+- dbt Core™ supported versions
+  - `>=1.3.0, <3.0.0`
 
 ## What does this dbt package do?
 This package models Workday Financial Management data from [Fivetran's Workday Financial Management connector](https://fivetran.com/docs/connectors/applications/workday-financial-management). It uses data in the format described by [this ERD](https://fivetran.com/docs/connectors/applications/workday-financial-management#schemainformation).
@@ -18,50 +24,58 @@ The package produces a transaction-level general ledger, a monthly rollup of it,
 
 - Restricts the output models to posted journal entries, so canceled and errored journals do not contaminate your balances. The staging models keep the full journal history.
 - Denormalizes journal header, company, ledger, ledger account, journal source, and currency context onto every journal entry line, so you do not have to join them back yourself.
-- Resolves Workday worktags, delivered and custom alike, into one column per worktag type — six by default, plus any you configure.
+- Resolves Workday worktags, delivered and custom alike, into one column per worktag type you configure.
 - Produces a signed `net_amount` alongside the native debit and credit amounts.
 - Rolls activity up to a monthly grain with beginning balance, net change, and ending balance, including months with no journal activity.
 - Places every journal entry line on the fiscal period its company reports on, so you are not limited to calendar months.
-- Pairs budgeted amounts against actual activity by company, ledger account, and fiscal period, with variance and fiscal year-to-date figures.
+- Pairs budgeted amounts against actual activity by company, ledger account, currency, and fiscal period, with variance and fiscal year-to-date figures.
 - Generates a comprehensive data dictionary of your source and modeled Workday Financial Management data through the [dbt docs site](https://fivetran.github.io/dbt_workday_financial_management/).
 
-<!--section="workday_financial_management_transformation_model"-->
-The following table provides a detailed list of all models materialized within this package by default.
+### Output schema
+Final output tables are generated in the following target schema:
 
-> TIP: See more details about these models in the package's [dbt docs site](https://fivetran.github.io/dbt_workday_financial_management/#!/overview?g_v=1).
+```
+<your_database>.<connector/schema_name>_workday_financial_management_reports
+```
 
-| **model**                                              | **description**                                                                                                                                                                                                 |
-| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [workday_financial_management__general_ledger](https://fivetran.github.io/dbt_workday_financial_management/#!/model/model.workday_financial_management.workday_financial_management__general_ledger) | Each record represents a single journal entry line, enriched with journal, company, ledger, ledger account, journal source, currency, and worktag context. |
-| [workday_financial_management__general_ledger_by_period](https://fivetran.github.io/dbt_workday_financial_management/#!/model/model.workday_financial_management.workday_financial_management__general_ledger_by_period) | Each record represents one company, ledger account, ledger currency, and calendar month, with the beginning balance, net change, and ending balance for that month. |
-| [workday_financial_management__budget_vs_actuals](https://fivetran.github.io/dbt_workday_financial_management/#!/model/model.workday_financial_management.workday_financial_management__budget_vs_actuals) | Each record represents one company, ledger account, currency, and fiscal period, with the budgeted amount, the actual amount, the variance between them, and fiscal year-to-date totals. |
+### Final output tables
 
-### Example questions these models answer
+By default, this package materializes the following final tables:
 
-**`workday_financial_management__general_ledger`**
-- What did we post to a given ledger account last quarter, and which journal source produced it?
-- How is spend distributed across cost centers, projects, or any other worktag our tenant uses?
-- Which journal entries have been reversed, and what were the original entries?
+| Table | Description |
+| :---- | :---- |
+| [`workday_financial_management__general_ledger`](https://fivetran.github.io/dbt_workday_financial_management/#!/model/model.workday_financial_management.workday_financial_management__general_ledger) | Each record represents a single journal entry line, enriched with journal, company, ledger, ledger account, journal source, currency, and worktag context.<br><br>**Example Analytics Questions:**<ul><li>What did we post to a given ledger account last quarter, and which journal source produced it?</li><li>How is spend distributed across cost centers, projects, or any other worktag our tenant uses?</li><li>Which journal entries have been reversed, and what were the original entries?</li></ul> |
+| [`workday_financial_management__general_ledger_by_period`](https://fivetran.github.io/dbt_workday_financial_management/#!/model/model.workday_financial_management.workday_financial_management__general_ledger_by_period) | Each record represents one company, ledger account, ledger currency, and calendar month, with the beginning balance, net change, and ending balance for that month.<br><br>**Example Analytics Questions:**<ul><li>What is the month-end balance of each balance sheet account, by company?</li><li>How has net activity in an expense account trended over the last twelve months?</li><li>Which accounts had no activity in a given month?</li></ul> |
+| [`workday_financial_management__budget_vs_actuals`](https://fivetran.github.io/dbt_workday_financial_management/#!/model/model.workday_financial_management.workday_financial_management__budget_vs_actuals) | Each record represents one company, ledger account, currency, and fiscal period, with the budgeted amount, the actual amount, the variance between them, and fiscal year-to-date totals.<br><br>**Example Analytics Questions:**<ul><li>Which accounts are over or under budget this fiscal period, and by how much?</li><li>How does spend track against plan year to date, on our own fiscal calendar rather than the calendar year?</li><li>Where are we spending against accounts we never budgeted for?</li></ul> |
 
-**`workday_financial_management__general_ledger_by_period`**
-- What is the month-end balance of each balance sheet account, by company?
-- How has net activity in an expense account trended over the last twelve months?
-- Which accounts had no activity in a given month?
+¹ Each Quickstart transformation job run materializes these models if all components of this data model are enabled. This count includes all staging, intermediate, and final models materialized as `view`, `table`, or `incremental`.
 
-**`workday_financial_management__budget_vs_actuals`**
-- Which accounts are over or under budget this fiscal period, and by how much?
-- How does spend track against plan year to date, on our own fiscal calendar rather than the calendar year?
-- Where are we spending against accounts we never budgeted for?
+---
 
-## How do I use the dbt package?
-
-### Step 1: Prerequisites
+## Prerequisites
 To use this dbt package, you must have the following:
 
-- At least one Fivetran Workday Financial Management connection syncing into your destination.
+- At least one Fivetran Workday Financial Management connection syncing data into your destination.
 - A **BigQuery**, **Snowflake**, **Redshift**, **PostgreSQL**, or **Databricks** destination.
 
-#### Databricks dispatch configuration
+## How do I use the dbt package?
+You can either add this dbt package in the Fivetran dashboard or import it into your dbt project:
+
+- To add the package in the Fivetran dashboard, follow our [Quickstart guide](https://fivetran.com/docs/transformations/data-models/quickstart-management).
+- To add the package to your dbt project, follow the setup instructions in the dbt package's [README file](https://github.com/fivetran/dbt_workday_financial_management/blob/main/README.md#how-do-i-use-the-dbt-package) to use this package.
+
+<!--section-end-->
+
+### Install the package
+Include the following package version in your `packages.yml` file:
+> TIP: Check [dbt Hub](https://hub.getdbt.com/) for the latest installation instructions or [read the dbt docs](https://docs.getdbt.com/docs/package-management) for more information on installing packages.
+```yaml
+packages:
+  - package: fivetran/workday_financial_management
+    version: [">=0.1.0", "<0.2.0"] # we recommend using ranges to capture non-breaking changes automatically
+```
+
+#### Databricks Dispatch Configuration
 If you are using a Databricks destination with this package, you must add the following (or a variation of the following) dispatch configuration within your `dbt_project.yml`. This is required in order for the package to accurately search for macros within the `dbt-labs/spark_utils` then the `dbt-labs/dbt_utils` packages respectively.
 ```yml
 dispatch:
@@ -69,16 +83,7 @@ dispatch:
     search_order: ['spark_utils', 'dbt_utils']
 ```
 
-### Step 2: Install the package
-Include the following package version in your `packages.yml` file:
-> TIP: Check [dbt Hub](https://hub.getdbt.com/) for the latest installation instructions or [read the dbt docs](https://docs.getdbt.com/docs/package-management) for more information on installing packages.
-```yaml
-packages:
-  - package: fivetran/workday_financial_management
-    version: [">=0.1.0", "<0.2.0"]
-```
-
-### Step 3: Define database and schema variables
+### Define database and schema variables
 #### Option A: Single connection
 By default, this package runs using your destination and the `workday_financial_management` schema. If this is not where your Workday Financial Management data is (for example, if your Workday Financial Management schema is named `workday_financial_management_fivetran`), add the following configuration to your root `dbt_project.yml` file:
 
@@ -103,20 +108,20 @@ vars:
         name: connection_2_source_name
 ```
 
-### (Optional) Step 4: Additional configurations
+### (Optional) Additional configurations
 
 #### Disable models for non-existent sources
 This package reads fifteen source tables. Ten of them are required, and the remaining five are gated behind two variables. If your Workday Financial Management connection does not sync a group, or your tenant does not use that feature, set the matching variable to `false` in your root `dbt_project.yml` file.
 
 | **variable** | **source tables it gates** | **what turning it off does** |
 | ------------ | -------------------------- | ---------------------------- |
-| `workday_financial_management_using_fiscal_calendar` | `fiscal_period`, `fiscal_year` | Drops the `fiscal_*` columns from `workday_financial_management__general_ledger`. Also disables `workday_financial_management__budget_vs_actuals`, which is grained on fiscal periods. |
-| `workday_financial_management_using_business_plans` | `business_plan_detail`, `business_plan_entry_line`, `business_plan_entry_line_worktag` | Disables their staging models and `workday_financial_management__budget_vs_actuals`. |
+| `workday_financial_management__using_fiscal_calendar` | `fiscal_period`, `fiscal_year` | Drops the `fiscal_*` columns from `workday_financial_management__general_ledger`. Also disables `workday_financial_management__budget_vs_actuals`, which is grained on fiscal periods. |
+| `workday_financial_management__using_business_plans` | `business_plan_detail`, `business_plan_entry_line`, `business_plan_entry_line_worktag` | Disables their staging models and `workday_financial_management__budget_vs_actuals`. |
 
 ```yml
 vars:
-    workday_financial_management_using_fiscal_calendar: false
-    workday_financial_management_using_business_plans: false
+    workday_financial_management__using_fiscal_calendar: false
+    workday_financial_management__using_business_plans: false
 ```
 
 The `worktag`, `custom_worktag`, and `journal_entry_line_worktag` tables are required. Their staging models always build. Whether any worktag reaches the general ledger is a separate choice, covered under [Configure worktag columns](#configure-worktag-columns).
@@ -131,7 +136,7 @@ For most fiscal schedules these are the same thing — a `May_April` schedule sh
 **Do not join the two models on period.** Join them on company and ledger account: match `company_id` to `company_id`, and `ledger_account_id` in `workday_financial_management__budget_vs_actuals` to `ledger_account_code` in `workday_financial_management__general_ledger_by_period`. Take the period from whichever model matches the calendar you report on. If you need a fiscal rollup of actuals for accounts that carry no budget, build it from `workday_financial_management__general_ledger`, which carries `fiscal_year_name`, `fiscal_year_start_date`, `fiscal_year_end_date`, and `fiscal_month_start_date` on every line.
 
 #### Change which journal entry statuses count as posted
-Both output models include only journal entries whose status is `POSTED`. If your Workday tenant uses different status values, add the following configuration to your root `dbt_project.yml` file:
+The output models include only journal entries whose status is `POSTED`. This also applies to the actuals in `workday_financial_management__budget_vs_actuals`. If your Workday tenant uses different status values, add the following configuration to your root `dbt_project.yml` file:
 
 ```yml
 vars:
@@ -171,14 +176,14 @@ vars:
     workday_financial_management__budget_worktag_types: ['Cost_Center_Reference_ID', 'Spend_Category_ID', 'Revenue_Category_ID']
 ```
 
-The values work the same way as `workday_financial_management__worktag_types`. The three above are a sensible starting point — they are the dimensions a budget is built on: who spends, what is bought, and what is earned.
+The values work the same way as `workday_financial_management__worktag_types`.
 
-Add types deliberately, because each one costs you comparisons. A budget line and an actual line pair only when they agree on every part of the key. Where one side carries a worktag and the other does not, what would have been a single paired row becomes two unpaired rows instead, reading as unspent budget next to unbudgeted spend. Neither is true. Region is the clearest example in Workday: it is usually recorded far more consistently on actual spend than on plans, which is why it is an add-on rather than a default.
+Add types deliberately, because each one costs you comparisons. A budget line and an actual line pair only when they agree on every part of the key. Where one side carries a worktag and the other does not, what would have been a single paired row becomes two unpaired rows instead, reading as unspent budget next to unbudgeted spend. Neither is true. Region is a common example: it is often recorded on actual spend but not on plans.
 
 Organization worktags cannot be used here at all. Workday allows a line to carry several of them at once — commonly a cost center, a region, a pay group, and an industry — and nothing in the connector says which is which. Using one as part of the key would split that line's amount across rows. Naming `Organization_Reference_ID` or `Custom_Organization_Reference_ID` fails the run with an error rather than quietly producing wrong totals. Use `Cost_Center_Reference_ID` or `Region_Reference_ID` instead; they hold the same values and carry one per line.
 
 #### Change the build schema
-By default, this package builds the Workday Financial Management staging models within a schema titled (<target_schema> + `_workday_financial_management_staging`), the intermediate models within (<target_schema> + `_workday_financial_management_intermediate`), and the final models within (<target_schema> + `_workday_financial_management_reports`) in your destination. If this is not where you would like your data to be written, add the following configuration to your root `dbt_project.yml` file:
+By default, this package builds the Workday Financial Management staging models within a schema titled (<target_schema> + `_workday_financial_management_staging`) and the final models within (<target_schema> + `_workday_financial_management_reports`) in your destination. If this is not where you would like your data to be written, add the following configuration to your root `dbt_project.yml` file:
 
 ```yml
 models:
@@ -187,7 +192,7 @@ models:
       staging:
         +schema: my_new_staging_schema_name
       intermediate:
-        +schema: my_new_intermediate_schema_name
+        +schema: my_new_staging_schema_name
 ```
 
 #### Change the source table references
@@ -199,6 +204,13 @@ If an individual source table has a different name than expected, add the releva
 vars:
     workday_financial_management_<default_source_table_name>_identifier: your_table_name
 ```
+
+### (Optional) Orchestrate your models with Fivetran Transformations for dbt Core™
+<details><summary>Expand for more details</summary>
+
+Fivetran offers the ability for you to orchestrate your dbt project through [Fivetran Transformations for dbt Core™](https://fivetran.com/docs/transformations/dbt#transformationsfordbtcore). Learn how to set up your project for orchestration through Fivetran in our [Transformations for dbt Core setup guides](https://fivetran.com/docs/transformations/dbt/setup-guide#transformationsfordbtcoresetupguide).
+
+</details>
 
 ## Does this package have dependencies?
 This dbt package is dependent on the following dbt packages. These dependencies are installed by default within this package. For more information on the below packages, refer to the [dbt hub](https://hub.getdbt.com/) site.
@@ -213,17 +225,24 @@ packages:
       version: [">=1.0.0", "<2.0.0"]
 ```
 
+<!--section="workday_financial_management_maintenance"-->
 ## How is this package maintained and can I contribute?
-### Package Maintenance
-The Fivetran team maintaining this package _only_ maintains the latest version of the package. We highly recommend that you stay consistent with the [latest version](https://hub.getdbt.com/fivetran/workday_financial_management/latest/) of the package and refer to the [CHANGELOG](https://github.com/fivetran/dbt_workday_financial_management/blob/main/CHANGELOG.md) and release notes for more information on changes across versions.
 
-### Opinionated modeling decisions
-This package takes opinionated stances on how Workday worktags, fiscal periods, running balances, and reversal conventions are modeled. Review the [DECISIONLOG](https://github.com/fivetran/dbt_workday_financial_management/blob/main/DECISIONLOG.md) before you use the output models — some of these decisions affect how you should read the balance columns and the debit and credit amounts.
+### Package Maintenance
+The Fivetran team maintaining this package only maintains the [latest version](https://hub.getdbt.com/fivetran/workday_financial_management/latest/) of the package. We highly recommend you stay consistent with the latest version of the package and refer to the [CHANGELOG](https://github.com/fivetran/dbt_workday_financial_management/blob/main/CHANGELOG.md) and release notes for more information on changes across versions.
 
 ### Contributions
 A small team of analytics engineers at Fivetran develops these dbt packages. However, the packages are made better by community contributions.
 
-We highly encourage and welcome contributions to this package. Check out [this dbt Discourse article](https://discourse.getdbt.com/t/contributing-to-a-dbt-package/657) on the best workflow for contributing to a package.
+We highly encourage and welcome contributions to this package. Learn how to contribute to a package in dbt's [Contributing to an external dbt package article](https://discourse.getdbt.com/t/contributing-to-a-dbt-package/657).
+
+#### Contributors
+We thank [everyone](https://github.com/fivetran/dbt_workday_financial_management/graphs/contributors) who has taken the time to contribute. Each PR, bug report, and feature request has made this package better and is truly appreciated.
+
+### Opinionated Decisions
+This package takes opinionated stances on how Workday worktags, fiscal periods, running balances, and reversal conventions are modeled. Review the [DECISIONLOG](https://github.com/fivetran/dbt_workday_financial_management/blob/main/DECISIONLOG.md) before you use the output models — some of these decisions affect how you should read the balance columns and the debit and credit amounts.
+
+<!--section-end-->
 
 ## Are there any resources available?
 - If you have questions or want to reach out for help, see the [GitHub Issue](https://github.com/fivetran/dbt_workday_financial_management/issues/new/choose) section to find the right avenue of support for you.

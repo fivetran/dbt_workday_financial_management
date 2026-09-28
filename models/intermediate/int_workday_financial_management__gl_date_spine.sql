@@ -2,7 +2,7 @@
 
 -- A monthly spine crossed with every company and ledger account that has activity, so that downstream period balances are densified across months with no journal activity.
 
--- Periods are calendar months. The connector syncs no fiscal calendar table 
+-- Periods are calendar months. Fiscal periods are handled in budget vs actuals.
 
 with spine as (
 

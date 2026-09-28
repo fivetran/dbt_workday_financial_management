@@ -97,7 +97,7 @@ year_number_conflicts as (
         fiscal_year.fiscal_year_name as conflicting_key
     from fiscal_year
 
-    join fiscal_year_derived
+    inner join fiscal_year_derived
         on fiscal_year.fiscal_schedule_id = fiscal_year_derived.fiscal_schedule_id
         and fiscal_year.fiscal_year_name = fiscal_year_derived.fiscal_year_name
         and fiscal_year.source_relation = fiscal_year_derived.source_relation
@@ -117,7 +117,7 @@ overlapping_periods as (
         later.fiscal_period_id as conflicting_key
     from fiscal_period as earlier
 
-    join fiscal_period as later
+    inner join fiscal_period as later
         on earlier.fiscal_schedule_id = later.fiscal_schedule_id
         and earlier.source_relation = later.source_relation
         and earlier.fiscal_period_id < later.fiscal_period_id
@@ -136,21 +136,21 @@ plan_schedule_conflicts as (
         business_plan_detail.business_plan_detail_id as conflicting_key
     from business_plan_detail
 
-    join fiscal_period
+    inner join fiscal_period
         on business_plan_detail.fiscal_time_interval_id = fiscal_period.fiscal_posting_interval_id
         and business_plan_detail.source_relation = fiscal_period.source_relation
 
-    join fiscal_year_resolved
+    inner join fiscal_year_resolved
         on fiscal_period.fiscal_schedule_id = fiscal_year_resolved.fiscal_schedule_id
         and fiscal_period.fiscal_year_name = fiscal_year_resolved.fiscal_year_name
         and fiscal_period.source_relation = fiscal_year_resolved.source_relation
         and business_plan_detail.plan_year = fiscal_year_resolved.fiscal_year_number
 
-    join company
+    inner join company
         on business_plan_detail.company_id = company.company_id
         and business_plan_detail.source_relation = company.source_relation
 
-    join schedule_by_code
+    inner join schedule_by_code
         on company.fiscal_schedule_code = schedule_by_code.fiscal_schedule_code
         and company.source_relation = schedule_by_code.source_relation
 

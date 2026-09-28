@@ -1,4 +1,4 @@
-{{ config(enabled=var('workday_financial_management_using_business_plans', True) and var('workday_financial_management_using_fiscal_calendar', True)) }}
+{{ config(enabled=var('workday_financial_management__using_business_plans', True) and var('workday_financial_management__using_fiscal_calendar', True)) }}
 
 {%- set worktag_types = workday_financial_management.resolve_budget_worktag_types() -%}
 {%- set using_worktags = worktag_types | length > 0 -%}
@@ -94,7 +94,7 @@ unambiguous_ledger_account as (
     select ledger_account.*
     from ledger_account
 
-    join ledger_account_code_counts
+    inner join ledger_account_code_counts
         on ledger_account.ledger_account_id = ledger_account_code_counts.ledger_account_id
         and ledger_account.source_relation = ledger_account_code_counts.source_relation
 
@@ -157,7 +157,7 @@ fiscal_period_detail as (
     from fiscal_period
 
     -- Built from fiscal_period itself, so every period has a row and this join drops nothing.
-    join fiscal_year_derived
+    inner join fiscal_year_derived
         on fiscal_period.fiscal_schedule_id = fiscal_year_derived.fiscal_schedule_id
         and fiscal_period.fiscal_year_name = fiscal_year_derived.fiscal_year_name
         and fiscal_period.source_relation = fiscal_year_derived.source_relation
@@ -186,7 +186,7 @@ budget_placed as (
         coalesce(business_plan_entry_line.debit_amount, 0) - coalesce(business_plan_entry_line.credit_amount, 0) as budget_amount
     from business_plan_entry_line
 
-    join business_plan_detail
+    inner join business_plan_detail
         on business_plan_entry_line.business_plan_detail_id = business_plan_detail.business_plan_detail_id
         and business_plan_entry_line.business_plan_detail_index = business_plan_detail.business_plan_detail_index
         and business_plan_entry_line.source_relation = business_plan_detail.source_relation
@@ -203,7 +203,7 @@ budget_placed as (
     -- The posting interval also implicitly selects the schedule -- business_plan_detail carries no
     -- fiscal_schedule_id, so it is the only route to one.
     -- Plans carrying no period at all have a plan_year of 0, which matches no fiscal year, so this join is what excludes them.
-    join fiscal_period_detail
+    inner join fiscal_period_detail
         on business_plan_detail.fiscal_time_interval_id = fiscal_period_detail.fiscal_posting_interval_id
         and business_plan_detail.plan_year = fiscal_period_detail.fiscal_year_number
         and business_plan_detail.source_relation = fiscal_period_detail.source_relation

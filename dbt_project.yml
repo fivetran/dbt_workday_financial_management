@@ -15,7 +15,7 @@ models:
         +schema: workday_financial_management_staging
         +materialized: view
     intermediate:
-      +schema: workday_financial_management_intermediate
+      +schema: workday_financial_management_staging
       +materialized: ephemeral
 
 vars:
@@ -41,9 +41,9 @@ vars:
   # Gates the two fiscal calendar source tables: fiscal_period and fiscal_year. Set to false if you
   # do not sync them, which drops the fiscal_* columns from the general ledger. Budget vs actuals
   # is grained on fiscal periods, so it is disabled along with them.
-  workday_financial_management_using_fiscal_calendar: true
+  workday_financial_management__using_fiscal_calendar: true
 
   # Gates the three business plan source tables, which is where Workday stores budgets:
   # business_plan_detail, business_plan_entry_line, and business_plan_entry_line_worktag. Set to
   # false to disable their staging models and the budget vs actuals model.
-  workday_financial_management_using_business_plans: true
+  workday_financial_management__using_business_plans: true

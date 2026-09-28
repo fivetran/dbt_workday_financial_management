@@ -4,11 +4,11 @@ schema_key: workday_financial_management_schema
 dbt_versions: ">=1.3.0 <3.0.0"
 
 table_variables:
-  workday_financial_management_using_business_plans:
+  workday_financial_management__using_business_plans:
     - business_plan_detail
     - business_plan_entry_line
     - business_plan_entry_line_worktag
-  workday_financial_management_using_fiscal_calendar:
+  workday_financial_management__using_fiscal_calendar:
     - fiscal_period
     - fiscal_year
 
@@ -37,11 +37,3 @@ supported_vars:
     type: list
     description: "Worktag types to add to the budget vs actuals grain. No type is included by default, so leave this empty to grain the model on company, ledger account, currency, and fiscal period alone. Each type you add splits budget from actuals wherever only one side records it, so add them deliberately. Organization worktag types are not accepted here and fail the run."
     display_name: "Budget Worktag Types"
-  workday_financial_management_using_business_plans:
-    type: boolean
-    description: "Enables the business plan source tables, which is where Workday stores budgets, and the budget vs actuals model. Set to false if you do not budget in Workday."
-    display_name: "Use Business Plans"
-  workday_financial_management_using_fiscal_calendar:
-    type: boolean
-    description: "Enables the fiscal period and fiscal year source tables. These add fiscal period columns to the general ledger and are required by budget vs actuals, which is grained on fiscal periods. Set to false if you do not sync them."
-    display_name: "Use Fiscal Calendar"

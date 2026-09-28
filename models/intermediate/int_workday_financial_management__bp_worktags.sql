@@ -1,6 +1,6 @@
 {{ config(
     enabled=workday_financial_management.resolve_budget_worktag_types() | length > 0
-        and var('workday_financial_management_using_business_plans', True)
+        and var('workday_financial_management__using_business_plans', True)
 ) }}
 
 {%- set worktag_types = workday_financial_management.resolve_budget_worktag_types() %}
@@ -33,7 +33,7 @@ line_worktags as (
         worktag.worktag_value
     from business_plan_line_worktag
 
-    join worktag
+    inner join worktag
         on business_plan_line_worktag.worktag_id = worktag.worktag_id
         and business_plan_line_worktag.source_relation = worktag.source_relation
 

@@ -1,4 +1,4 @@
-{%- set using_fiscal_calendar = var('workday_financial_management_using_fiscal_calendar', True) -%}
+{%- set using_fiscal_calendar = var('workday_financial_management__using_fiscal_calendar', True) -%}
 
 {%- set posted_statuses = var('workday_financial_management__posted_statuses', ['POSTED']) -%}
 
@@ -63,7 +63,7 @@ unambiguous_ledger_account as (
     select ledger_account.*
     from ledger_account
 
-    join ledger_account_code_counts
+    inner join ledger_account_code_counts
         on ledger_account.ledger_account_id = ledger_account_code_counts.ledger_account_id
         and ledger_account.source_relation = ledger_account_code_counts.source_relation
 
@@ -200,7 +200,7 @@ joined as (
 
     from journal_entry_line
 
-    join journal_entry
+    inner join journal_entry
         on journal_entry_line.journal_entry_id = journal_entry.journal_entry_id
         and journal_entry_line.source_relation = journal_entry.source_relation
 

@@ -100,7 +100,7 @@ budget_worktags as (
         {%- endfor %}
     from {{ ref('stg_workday_financial_management__business_plan_line_worktag') }} as business_plan_line_worktag
 
-    join {{ ref('int_workday_financial_management__worktag_lookup') }} as worktag
+    inner join {{ ref('int_workday_financial_management__worktag_lookup') }} as worktag
         on business_plan_line_worktag.worktag_id = worktag.worktag_id
         and business_plan_line_worktag.source_relation = worktag.source_relation
 
@@ -123,16 +123,16 @@ budget_source as (
         sum(coalesce(business_plan_entry_line.debit_amount, 0) - coalesce(business_plan_entry_line.credit_amount, 0)) as source_budget_amount
     from business_plan_entry_line
 
-    join business_plan_detail
+    inner join business_plan_detail
         on business_plan_entry_line.business_plan_detail_id = business_plan_detail.business_plan_detail_id
         and business_plan_entry_line.business_plan_detail_index = business_plan_detail.business_plan_detail_index
         and business_plan_entry_line.source_relation = business_plan_detail.source_relation
 
-    join fiscal_period
+    inner join fiscal_period
         on business_plan_detail.fiscal_time_interval_id = fiscal_period.fiscal_posting_interval_id
         and business_plan_detail.source_relation = fiscal_period.source_relation
 
-    join fiscal_year_resolved
+    inner join fiscal_year_resolved
         on fiscal_period.fiscal_schedule_id = fiscal_year_resolved.fiscal_schedule_id
         and fiscal_period.fiscal_year_name = fiscal_year_resolved.fiscal_year_name
         and fiscal_period.source_relation = fiscal_year_resolved.source_relation

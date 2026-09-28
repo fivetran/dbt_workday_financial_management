@@ -1,4 +1,4 @@
-{{ config(enabled=var('workday_financial_management_using_fiscal_calendar', True)) }}
+{{ config(enabled=var('workday_financial_management__using_fiscal_calendar', True)) }}
 
 {{
     fivetran_utils.union_connections(

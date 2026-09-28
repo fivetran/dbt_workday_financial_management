@@ -117,8 +117,9 @@ models:
   - name: stg_workday_financial_management__journal_entry_line_worktag
     description: >
       Each record links a journal entry line to one worktag applied to it. The relationship is
-      many-to-many — a single line can carry several worktags of different types. Join to
-      stg_workday_financial_management__worktag to resolve a worktag's type and name.
+      many-to-many — a single line can carry several worktags of different types. A worktag_id
+      resolves against either stg_workday_financial_management__worktag or
+      stg_workday_financial_management__custom_worktag.
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -212,8 +213,8 @@ models:
 
   - name: stg_workday_financial_management__ledger_account
     description: >
-      Each record represents a ledger account in the chart of accounts. The account code is not
-      stored here — it is denormalized onto stg_workday_financial_management__journal_entry_line.
+      Each record represents a ledger account. The ledger_account_id is the account code, which
+      can repeat across account sets.
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -466,8 +467,8 @@ models:
   - name: stg_workday_financial_management__fiscal_year
     description: >
       Each record represents one fiscal year of a fiscal schedule, with its start and end dates.
-      Resolves a company's fiscal_schedule_code to a schedule, and gives year-to-date figures the
-      boundary they reset on.
+      Links a company's fiscal_schedule_code to a schedule and gives business plans their fiscal
+      year number.
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
