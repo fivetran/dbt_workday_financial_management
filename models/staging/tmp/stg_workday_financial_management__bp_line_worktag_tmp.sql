@@ -1,4 +1,4 @@
-{{ config(enabled=var('workday_financial_management__using_business_plans', True)) }}
+{{ config(enabled=var('workday_financial_management__using_business_plans', False)) }}
 
 {{
     fivetran_utils.union_connections(

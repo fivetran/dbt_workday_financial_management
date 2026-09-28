@@ -1,4 +1,4 @@
-{{ config(enabled=var('workday_financial_management__using_business_plans', True) and var('workday_financial_management__using_fiscal_calendar', True)) }}
+{{ config(enabled=var('workday_financial_management__using_business_plans', False) and var('workday_financial_management__using_fiscal_calendar', False)) }}
 
 {%- set worktag_types = workday_financial_management.resolve_budget_worktag_types() -%}
 {%- set using_worktags = worktag_types | length > 0 -%}

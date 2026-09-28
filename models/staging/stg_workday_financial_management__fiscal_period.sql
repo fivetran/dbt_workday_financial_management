@@ -1,4 +1,4 @@
-{{ config(enabled=var('workday_financial_management__using_fiscal_calendar', True)) }}
+{{ config(enabled=var('workday_financial_management__using_fiscal_calendar', False)) }}
 
 with base as (
 

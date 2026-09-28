@@ -1,4 +1,4 @@
-{%- set using_fiscal_calendar = var('workday_financial_management__using_fiscal_calendar', True) -%}
+{%- set using_fiscal_calendar = var('workday_financial_management__using_fiscal_calendar', False) -%}
 
 {%- set posted_statuses = var('workday_financial_management__posted_statuses', ['POSTED']) -%}
 
@@ -185,16 +185,8 @@ joined as (
         company.is_sign_reversed
 
         {% if using_worktags %}
-            -- Every non-worktag column produced by this CTE. A worktag type can be named  after one of them, so any collision gets a pivoted_ prefix rather than silently producing a duplicate column name.
-            
-            {%- set line_columns = ['source_relation', 'general_ledger_id', 'journal_entry_id', 'journal_entry_line_index', 'budget_date', 'line_company_id', 'ledger_account_id', 'ledger_account_code', 'account_set_name', 'currency_id', 'currency_rate', 'debit_amount', 'credit_amount', 'net_amount', 'ledger_debit_amount', 'ledger_credit_amount', 'ledger_net_amount', 'quantity', 'journal_line_number', 'line_order', 'journal_entry_line_memo', 'exclude_from_spend_report'] -%}
-            {%- set header_columns = ['journal_number', 'journal_sequence_number', 'journal_entry_status', 'book_code', 'accounting_date', 'transaction_date', 'created_at', 'company_id', 'ledger_id', 'journal_source_id', 'journal_entry_memo', 'external_reference_id', 'cancel_reverses_journal_entry_id', 'cancel_reversed_by_journal_entry_id', 'functional_reverses_journal_entry_id', 'functional_reversed_by_journal_entry_id'] -%}
-            {%- set fiscal_columns = ['fiscal_schedule_code', 'fiscal_year_name', 'fiscal_year_start_date', 'fiscal_year_end_date', 'fiscal_period_id', 'fiscal_month_name', 'fiscal_month_start_date', 'fiscal_month_end_date'] if using_fiscal_calendar else [] -%}
-            {%- set dimension_columns = ['company_name', 'company_code', 'ledger_code', 'ledger_type', 'ledger_account_name', 'ledger_account_type', 'account_set_id', 'journal_source_name', 'currency_code', 'ledger_currency_id', 'ledger_currency_code', 'is_debit_credit_reversed', 'is_sign_reversed'] + fiscal_columns -%}
-            {%- set joined_columns = line_columns + header_columns + dimension_columns -%}
-
             {% for worktag in worktag_types %}
-                , pivoted_worktags.{{ worktag.column_name }} {{ 'as pivoted_' ~ worktag.column_name if worktag.column_name in joined_columns }}
+                , pivoted_worktags.{{ worktag.column_name }}
             {% endfor %}
         {% endif %}
 

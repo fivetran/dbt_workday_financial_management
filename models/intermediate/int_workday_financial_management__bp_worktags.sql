@@ -1,6 +1,6 @@
 {{ config(
     enabled=workday_financial_management.resolve_budget_worktag_types() | length > 0
-        and var('workday_financial_management__using_business_plans', True)
+        and var('workday_financial_management__using_business_plans', False)
 ) }}
 
 {%- set worktag_types = workday_financial_management.resolve_budget_worktag_types() %}

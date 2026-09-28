@@ -1,4 +1,4 @@
-{{ config(enabled=var('workday_financial_management__using_fiscal_calendar', True)) }}
+{{ config(enabled=var('workday_financial_management__using_fiscal_calendar', False)) }}
 
 -- One row per company and fiscal period, resolving each company's fiscal schedule into the dated periods it reports on. 
 -- Journal activity is placed on a fiscal period by finding the period whose date range contains the accounting date.
