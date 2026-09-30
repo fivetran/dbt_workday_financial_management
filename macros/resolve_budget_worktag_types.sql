@@ -1,4 +1,8 @@
 {% macro resolve_budget_worktag_types() %}
+    {{ return(adapter.dispatch('resolve_budget_worktag_types', 'workday_financial_management')()) }}
+{% endmacro %}
+
+{% macro default__resolve_budget_worktag_types() %}
 
 {#-
     The worktag types that become part of the budget vs actuals grain.

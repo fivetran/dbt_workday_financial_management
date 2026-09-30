@@ -1,4 +1,8 @@
 {% macro resolve_worktag_types() %}
+    {{ return(adapter.dispatch('resolve_worktag_types', 'workday_financial_management')()) }}
+{% endmacro %}
+
+{% macro default__resolve_worktag_types() %}
 
 {#-
     The worktag types that become columns on the general ledger.

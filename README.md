@@ -18,9 +18,7 @@ This dbt package transforms data from Fivetran's Workday Financial Management co
   - `>=1.3.0, <3.0.0`
 
 ## What does this dbt package do?
-This package models Workday Financial Management data from [Fivetran's Workday Financial Management connector](https://fivetran.com/docs/connectors/applications/workday-financial-management). It uses data in the format described by [this ERD](https://fivetran.com/docs/connectors/applications/workday-financial-management#schemainformation).
-
-The package produces a transaction-level general ledger, a monthly rollup of it, and a budget vs actuals comparison, along with a data dictionary of your source and modeled data through the [dbt docs site](https://fivetran.github.io/dbt_workday_financial_management/). The general ledger keeps only posted journal entries and enriches every line with its journal, company, ledger, account, source, currency, and fiscal period context, a signed `net_amount`, and one column per Workday worktag type you configure. The monthly rollup tracks beginning balance, net change, and ending balance for every month, including months with no activity, while the budget vs actuals model compares budgeted and actual amounts by company, ledger account, currency, and fiscal period, with variance and fiscal year-to-date figures.
+This package produces a general ledger of your posted journal entries, a monthly summary of balances by account, and a budget vs actuals comparison. It also includes a data dictionary of your source and modeled data through the [dbt docs site](https://fivetran.github.io/dbt_workday_financial_management/).
 
 ### Output schema
 Final output tables are generated in the following target schema:
@@ -37,7 +35,7 @@ By default, this package materializes the following final tables:
 | :---- | :---- |
 | [`workday_financial_management__general_ledger`](https://fivetran.github.io/dbt_workday_financial_management/#!/model/model.workday_financial_management.workday_financial_management__general_ledger) | Each record represents a single journal entry line, enriched with journal, company, ledger, ledger account, journal source, currency, and worktag context.<br><br>**Example Analytics Questions:**<ul><li>What did we post to a given ledger account last quarter, and which journal source produced it?</li><li>How is spend distributed across cost centers, projects, or any other worktag our tenant uses?</li><li>Which journal entries have been reversed, and what were the original entries?</li></ul> |
 | [`workday_financial_management__general_ledger_by_period`](https://fivetran.github.io/dbt_workday_financial_management/#!/model/model.workday_financial_management.workday_financial_management__general_ledger_by_period) | Each record represents one company, ledger account, ledger currency, and calendar month, with the beginning balance, net change, and ending balance for that month.<br><br>**Example Analytics Questions:**<ul><li>What is the month-end balance of each balance sheet account, by company?</li><li>How has net activity in an expense account trended over the last twelve months?</li><li>Which accounts had no activity in a given month?</li></ul> |
-| [`workday_financial_management__budget_vs_actuals`](https://fivetran.github.io/dbt_workday_financial_management/#!/model/model.workday_financial_management.workday_financial_management__budget_vs_actuals) | Each record represents one company, ledger account, currency, and fiscal period, with the budgeted amount, the actual amount, the variance between them, and fiscal year-to-date totals.<br><br>**Example Analytics Questions:**<ul><li>Which accounts are over or under budget this fiscal period, and by how much?</li><li>How does spend track against plan year to date, on our own fiscal calendar rather than the calendar year?</li><li>Where are we spending against accounts we never budgeted for?</li></ul> |
+| [`workday_financial_management__budget_vs_actuals`](https://fivetran.github.io/dbt_workday_financial_management/#!/model/model.workday_financial_management.workday_financial_management__budget_vs_actuals) | Each record represents one company, ledger account, currency, and fiscal period, with the budgeted amount, the actual amount, the variance between them, and fiscal year-to-date totals.<br><br>**This model is disabled by default.** To enable it, set `workday_financial_management__using_fiscal_calendar` and `workday_financial_management__using_business_plans` to `true`. See [Enable models for optional sources](#enable-models-for-optional-sources) for details.<br><br>**Example Analytics Questions:**<ul><li>Which accounts are over or under budget this fiscal period, and by how much?</li><li>How does spend track against plan year to date, on our own fiscal calendar rather than the calendar year?</li><li>Where are we spending against accounts we never budgeted for?</li></ul> |
 
 ¹ Each Quickstart transformation job run materializes these models if all components of this data model are enabled. This count includes all staging, intermediate, and final models materialized as `view`, `table`, or `incremental`.
 
@@ -66,14 +64,6 @@ packages:
     version: [">=0.1.0", "<0.2.0"] # we recommend using ranges to capture non-breaking changes automatically
 ```
 
-#### Databricks Dispatch Configuration
-If you are using a Databricks destination with this package, you must add the following (or a variation of the following) dispatch configuration within your `dbt_project.yml`. This is required in order for the package to accurately search for macros within the `dbt-labs/spark_utils` then the `dbt-labs/dbt_utils` packages respectively.
-```yml
-dispatch:
-  - macro_namespace: dbt_utils
-    search_order: ['spark_utils', 'dbt_utils']
-```
-
 ### Define database and schema variables
 #### Option A: Single connection
 By default, this package runs using your destination and the `workday_financial_management` schema. If this is not where your Workday Financial Management data is (for example, if your Workday Financial Management schema is named `workday_financial_management_fivetran`), add the following configuration to your root `dbt_project.yml` file:
@@ -99,17 +89,20 @@ vars:
         name: connection_2_source_name
 ```
 
+#### Optional: Incorporate unioned sources into DAG
+If you use [Fivetran Transformations for dbt Core™](https://fivetran.com/docs/transformations/dbt#transformationsfordbtcore) and are unioning multiple Workday Financial Management connections, you can define your sources in a property `.yml` file, [using this as a template](https://github.com/fivetran/dbt_workday_financial_management/blob/main/models/staging/src_workday_financial_management.yml). Set the variable `has_defined_sources: true` under the Workday Financial Management namespace in your `dbt_project.yml`. Otherwise, your Workday Financial Management connections won't appear in your DAG. See the `union_connections` macro [documentation](https://github.com/fivetran/dbt_fivetran_utils/tree/releases/v0.4.latest#optional-union-connections-defined-sources-configuration) for full configuration details.
+
 ### (Optional) Additional configurations
 
 #### Enable models for optional sources
-This package reads fifteen source tables. Ten of them are required, and the remaining five are gated behind two variables. Both variables are disabled by default. If your Workday Financial Management connection syncs a group, and your tenant uses that feature, set the matching variable to `true` in your root `dbt_project.yml` file.
+Two variables control the optional parts of this package. Both are `false` by default.
 
-| **variable** | **source tables it gates** | **what turning it on does** |
-| ------------ | -------------------------- | ---------------------------- |
-| `workday_financial_management__using_fiscal_calendar` | `fiscal_period`, `fiscal_year` | Adds the `fiscal_*` columns to `workday_financial_management__general_ledger`. Required for `workday_financial_management__budget_vs_actuals`, which is grained on fiscal periods. |
-| `workday_financial_management__using_business_plans` | `business_plan_detail`, `business_plan_entry_line`, `business_plan_entry_line_worktag` | Enables their staging models. Required for `workday_financial_management__budget_vs_actuals`. |
+| **Variable** | **Source tables** | **What setting it to `true` does** |
+| ------------ | ----------------- | ---------------------------------- |
+| `workday_financial_management__using_fiscal_calendar` | `fiscal_period`, `fiscal_year` | Adds the `fiscal_*` columns to `workday_financial_management__general_ledger`. |
+| `workday_financial_management__using_business_plans` | `business_plan_detail`, `business_plan_entry_line`, `business_plan_entry_line_worktag` | Brings in your Workday budgets, which `workday_financial_management__budget_vs_actuals` uses. |
 
-> `workday_financial_management__budget_vs_actuals` does not build unless you set both `workday_financial_management__using_fiscal_calendar` and `workday_financial_management__using_business_plans` to `true`.
+To enable `workday_financial_management__budget_vs_actuals`, set **both** variables to `true` in your root `dbt_project.yml` file:
 
 ```yml
 vars:
@@ -117,14 +110,8 @@ vars:
     workday_financial_management__using_business_plans: true
 ```
 
-The `worktag`, `custom_worktag`, and `journal_entry_line_worktag` tables are required. Their staging models always build. Whether any worktag reaches the general ledger is a separate choice, covered under [Configure worktag columns](#configure-worktag-columns).
-
-Every model not named above builds as normal.
-
 #### Understand which period each model uses
-`workday_financial_management__general_ledger_by_period` reports on **calendar months**. `workday_financial_management__budget_vs_actuals` reports on **fiscal periods**, because that is how Workday stores budgets.
-
-For most fiscal schedules these are the same thing — a `May_April` schedule shifts only the year boundary, not the month boundaries. On a 4-4-5 schedule they are not: a fiscal period straddles two calendar months, so no calendar-month row can carry a single fiscal period label and vice versa. That is why neither model carries the other's period columns.
+`workday_financial_management__general_ledger_by_period` reports by calendar month, while `workday_financial_management__budget_vs_actuals` reports by fiscal period, matching how Workday stores budgets. These periods align for standard fiscal schedules such as May_April, but not for 4-4-5 schedules, where fiscal periods can span multiple calendar months. Therefore, neither model includes the other model’s period columns.
 
 **Do not join the two models on period.** Join them on company and ledger account: match `company_id` to `company_id`, and `ledger_account_id` in `workday_financial_management__budget_vs_actuals` to `ledger_account_code` in `workday_financial_management__general_ledger_by_period`. Take the period from whichever model matches the calendar you report on. If you need a fiscal rollup of actuals for accounts that carry no budget, build it from `workday_financial_management__general_ledger`, which carries `fiscal_year_name`, `fiscal_year_start_date`, `fiscal_year_end_date`, and `fiscal_month_start_date` on every line.
 
@@ -136,7 +123,7 @@ vars:
     workday_financial_management__posted_statuses: ['POSTED', 'YOUR_STATUS']
 ```
 
-The staging models are never filtered, so `stg_workday_financial_management__journal_entry` always carries the complete journal history.
+These staging models are not filtered, so `stg_workday_financial_management__journal_entry` always carries the complete journal history.
 
 #### Configure worktag columns
 This package resolves your Workday worktags into one column per worktag type on `workday_financial_management__general_ledger`. **No worktag type is included by default.** A Workday tenant can define dozens of them, and which ones carry meaning is a question only you can answer, so you name the ones you want and the package adds a column for each.
@@ -150,9 +137,15 @@ vars:
 
 Each value must match either the `attribute` column of your `worktag` table or the `configuration_code` column of your `custom_worktag` table, so you can name delivered and custom worktags in the same list. Matching is case-insensitive. Each value becomes its own column, named after the value slugified — `Fund_Reference_ID` becomes `fund_reference_id`.
 
-The connector reports worktag types using Workday's -ID naming rather than the display names in Workday's worktag documentation, so check your own `worktag` table's `attribute` column before adding a type. A type your organization does not use still produces a column; it is simply null.
+You can check which worktags and custom worktags are available in your dbt project by querying the staging tables:
+```sql
+select distinct worktag_type from <your_database>.<connector/schema_name>_workday_financial_management.stg_workday_financial_management__worktag
+```
+```sql
+select distinct configuration_code from <your_database>.<connector/schema_name>_workday_financial_management.stg_workday_financial_management__custom_worktag
+```
 
-Leave the list empty and the general ledger carries no worktag columns, and `int_workday_financial_management__worktags_pivoted` is not built.
+The connector reports worktag types using Workday's -ID naming rather than the display names in Workday's worktag documentation, so check your own `worktag` table's `attribute` column before adding a type. A type your organization does not use still produces a column; it is simply null.
 
 A journal line can carry multiple worktags of the same type, with different values. The column holds every value, joined by ` | `.
 
@@ -170,7 +163,35 @@ The values work the same way as `workday_financial_management__worktag_types`.
 
 Add types deliberately, because each one costs you comparisons. A budget line and an actual line pair only when they agree on every part of the key. Where one side carries a worktag and the other does not, what would have been a single paired row becomes two unpaired rows instead, reading as unspent budget next to unbudgeted spend. Neither is true. Region is a common example: it is often recorded on actual spend but not on plans.
 
-Organization worktags cannot be used here at all. Workday allows a line to carry several of them at once — commonly a cost center, a region, a pay group, and an industry — and nothing in the connector says which is which. Using one as part of the key would split that line's amount across rows. Naming `Organization_Reference_ID` or `Custom_Organization_Reference_ID` fails the run with an error rather than quietly producing wrong totals. Use `Cost_Center_Reference_ID` or `Region_Reference_ID` instead; they hold the same values and carry one per line.
+Organization worktags cannot be used because each line may have multiple values, such as a cost center, region, and industry, and the connector does not identify their types. Adding them to the key would create multiple rows for the same amount, while using Organization_Reference_ID or Custom_Organization_Reference_ID causes an error. In observed data, all values included in organization worktags were referenced as single worktag types in additional columns.
+
+#### Overriding worktag resolution
+Two macros decide which worktag types the package uses:
+
+- `resolve_worktag_types()` picks the worktag columns on the general ledger.
+- `resolve_budget_worktag_types()` picks the worktag types in the budget vs actuals grain.
+
+Most users only need the variables above. If you need different logic, you can replace either macro with your own. Both use [`adapter.dispatch`](https://docs.getdbt.com/reference/dbt-jinja-functions/dispatch). To override one, add the following to your root `dbt_project.yml` file:
+
+```yml
+dispatch:
+  - macro_namespace: workday_financial_management
+    search_order: ['<your_project_name>', 'workday_financial_management']
+```
+
+Then create a macro in your project named `<your_project_name>__resolve_worktag_types()` or `<your_project_name>__resolve_budget_worktag_types()`. Your macro must return a list in the same format as the package version: one entry per worktag type, each with a `worktag_type` and a `column_name`. For example:
+
+```sql
+{% macro my_project__resolve_budget_worktag_types() %}
+    {{ return([
+        {'worktag_type': 'Cost_Center_Reference_ID', 'column_name': 'cost_center_reference_id'}
+    ]) }}
+{% endmacro %}
+```
+
+Keep these points in mind:
+- The general ledger macro also includes every budget worktag type, because budget vs actuals reads its actuals from the general ledger. If you override `resolve_worktag_types()`, keep the budget types in its output, or budget vs actuals fails on a missing column.
+- The package version of `resolve_budget_worktag_types()` blocks organization worktags. Your override skips that check. If you return `Organization_Reference_ID` or `Custom_Organization_Reference_ID`, budget vs actuals can split a line's amount across rows and report wrong totals.
 
 #### Change the build schema
 By default, this package builds the Workday Financial Management staging models within a schema titled (<target_schema> + `_workday_financial_management_staging`) and the final models within (<target_schema> + `_workday_financial_management_reports`) in your destination. If this is not where you would like your data to be written, add the following configuration to your root `dbt_project.yml` file:
@@ -188,7 +209,7 @@ models:
 #### Change the source table references
 If an individual source table has a different name than expected, add the relevant variable to your root `dbt_project.yml` file:
 
-> IMPORTANT: See this project's [`dbt_project.yml`](https://github.com/fivetran/dbt_workday_financial_management/blob/main/dbt_project.yml) variable declarations to see the expected names.
+> IMPORTANT: See this project's [`dbt_project.yml`](https://github.com/fivetran/dbt_workday_financial_management/blob/main/integration_tests/dbt_project.yml) variable declarations to see the expected names.
 
 ```yml
 vars:
