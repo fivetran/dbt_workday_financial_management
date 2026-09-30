@@ -1,0 +1,3 @@
+fiscal_schedule_id,fiscal_year_name,fiscal_year_id,fiscal_year_code,fiscal_year_number,fiscal_schedule_code,fiscal_year_start_date,fiscal_year_end_date,_fivetran_synced,_fivetran_deleted
+f5c1a0d3e7b94268a1c5309fb62d47ae,2024,fy2024f5c1a0d3e7b94268a1c5309f,FY2024,2024,CAL-MONTHLY,2024-01-01,2024-12-31,2026-01-15T09:00:00Z,false
+f5c1a0d3e7b94268a1c5309fb62d47ae,2025,fy2025f5c1a0d3e7b94268a1c5309f,FY2025,2025,CAL-MONTHLY,2025-01-01,2025-12-31,2026-01-15T09:00:00Z,false
