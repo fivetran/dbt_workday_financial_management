@@ -23,7 +23,6 @@ final as (
 
     select
         source_relation,
-        {{ dbt_utils.generate_surrogate_key(['journal_entry_id', 'journal_entry_line_index', 'worktag_id', 'source_relation']) }} as journal_entry_line_worktag_id,
         cast(journal_entry_id as {{ dbt.type_string() }}) as journal_entry_id,
         journal_entry_line_index,
         cast(worktag_id as {{ dbt.type_string() }}) as worktag_id,

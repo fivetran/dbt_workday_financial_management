@@ -23,7 +23,6 @@ final as (
 
     select
         source_relation,
-        {{ dbt_utils.generate_surrogate_key(['journal_entry_id', 'index', 'source_relation']) }} as journal_entry_line_id,
         cast(journal_entry_id as {{ dbt.type_string() }}) as journal_entry_id,
         index as journal_entry_line_index,
         line_order,

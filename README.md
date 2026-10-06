@@ -113,8 +113,6 @@ vars:
 #### Understand which period each model uses
 `workday_financial_management__general_ledger_by_period` reports by calendar month, while `workday_financial_management__budget_vs_actuals` reports by fiscal period, matching how Workday stores budgets. These periods align for standard fiscal schedules such as May_April, but not for 4-4-5 schedules, where fiscal periods can span multiple calendar months. Therefore, neither model includes the other model’s period columns.
 
-**Do not join the two models on period.** Join them on company and ledger account: match `company_id` to `company_id`, and `ledger_account_id` in `workday_financial_management__budget_vs_actuals` to `ledger_account_code` in `workday_financial_management__general_ledger_by_period`. Take the period from whichever model matches the calendar you report on. If you need a fiscal rollup of actuals for accounts that carry no budget, build it from `workday_financial_management__general_ledger`, which carries `fiscal_year_name`, `fiscal_year_start_date`, `fiscal_year_end_date`, and `fiscal_month_start_date` on every line.
-
 #### Change which journal entry statuses count as posted
 The output models include only journal entries whose status is `POSTED`. This also applies to the actuals in `workday_financial_management__budget_vs_actuals`. If your Workday tenant uses different status values, add the following configuration to your root `dbt_project.yml` file:
 

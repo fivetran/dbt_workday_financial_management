@@ -25,7 +25,6 @@ final as (
 
     select
         source_relation,
-        {{ dbt_utils.generate_surrogate_key(['business_plan_detail_id', 'business_plan_detail_index', 'business_plan_entry_line_index', 'worktag_id', 'source_relation']) }} as business_plan_line_worktag_id,
         cast(business_plan_detail_id as {{ dbt.type_string() }}) as business_plan_detail_id,
         business_plan_detail_index,
         business_plan_entry_line_index,

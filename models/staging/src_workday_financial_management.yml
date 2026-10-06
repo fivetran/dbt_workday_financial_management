@@ -4,6 +4,8 @@ sources:
   - name: workday_financial_management
     schema: "{{ var('workday_financial_management_schema', 'workday_financial_management') }}"
     database: "{% if target.type != 'spark' %}{{ var('workday_financial_management_database', target.database) }}{% endif %}"
+    config:
+      enabled: "{{ var('workday_financial_management_sources', []) == [] }}"
 
     tables:
       - name: journal_entry
@@ -263,6 +265,8 @@ sources:
 
       - name: business_plan_detail
         identifier: "{{ var('workday_financial_management_business_plan_detail_identifier', 'business_plan_detail') }}"
+        config:
+          enabled: "{{ var('workday_financial_management__using_business_plans', False) and var('workday_financial_management_sources', []) == [] }}"
         description: >
           The header of a business plan, which is how Workday stores budgets. One row per plan, per
           company, per fiscal period. The plan's amounts live on business_plan_entry_line.
@@ -302,6 +306,8 @@ sources:
 
       - name: business_plan_entry_line
         identifier: "{{ var('workday_financial_management_business_plan_entry_line_identifier', 'business_plan_entry_line') }}"
+        config:
+          enabled: "{{ var('workday_financial_management__using_business_plans', False) and var('workday_financial_management_sources', []) == [] }}"
         description: >
           The individual budgeted amounts of a business plan, and the grain budget is stored at.
           One row per line. Like journal entry lines, Workday records these as explicit debit and
@@ -330,6 +336,8 @@ sources:
 
       - name: business_plan_entry_line_worktag
         identifier: "{{ var('workday_financial_management_business_plan_entry_line_worktag_identifier', 'business_plan_entry_line_worktag') }}"
+        config:
+          enabled: "{{ var('workday_financial_management__using_business_plans', False) and var('workday_financial_management_sources', []) == [] }}"
         description: >
           Bridge table linking business plan entry lines to the worktags tagged on them. Many-to-many,
           and structurally identical to journal_entry_line_worktag, so budget and actuals resolve
@@ -348,6 +356,8 @@ sources:
 
       - name: fiscal_period
         identifier: "{{ var('workday_financial_management_fiscal_period_identifier', 'fiscal_period') }}"
+        config:
+          enabled: "{{ var('workday_financial_management__using_fiscal_calendar', False) and var('workday_financial_management_sources', []) == [] }}"
         description: >
           The accounting periods of a fiscal schedule, with their start and end dates. This is the
           period definition budgets are stored against, and it is what lets journal activity be
@@ -370,6 +380,8 @@ sources:
 
       - name: fiscal_year
         identifier: "{{ var('workday_financial_management_fiscal_year_identifier', 'fiscal_year') }}"
+        config:
+          enabled: "{{ var('workday_financial_management__using_fiscal_calendar', False) and var('workday_financial_management_sources', []) == [] }}"
         description: >
           The fiscal years of a fiscal schedule, with their start and end dates. Resolves the
           company's fiscal_schedule_code to a schedule, and gives year-to-date figures a boundary

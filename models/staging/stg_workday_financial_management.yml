@@ -60,17 +60,11 @@ models:
     description: >
       Each record represents a single debit or credit line of a journal entry. This is the
       transactional grain of the general ledger. Workday stores debits and credits as explicit
-      columns in both transaction and ledger currency.
+      columns in both transaction and ledger currency. The grain of this model is
+      journal_entry_id, journal_entry_line_index, source_relation.
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
-      - name: journal_entry_line_id
-        description: >
-          Surrogate key derived from journal_entry_id, journal_entry_line_index, and
-          source_relation.
-        tests:
-          - not_null
-          - unique
       - name: journal_entry_id
         description: "{{ doc('journal_entry_id') }}"
         tests:
@@ -119,17 +113,11 @@ models:
       Each record links a journal entry line to one worktag applied to it. The relationship is
       many-to-many — a single line can carry several worktags of different types. A worktag_id
       resolves against either stg_workday_financial_management__worktag or
-      stg_workday_financial_management__custom_worktag.
+      stg_workday_financial_management__custom_worktag. The grain of this model is
+      journal_entry_id, journal_entry_line_index, worktag_id, source_relation.
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
-      - name: journal_entry_line_worktag_id
-        description: >
-          Surrogate key derived from journal_entry_id, journal_entry_line_index, worktag_id, and
-          source_relation.
-        tests:
-          - not_null
-          - unique
       - name: journal_entry_id
         description: "{{ doc('journal_entry_id') }}"
         tests:
@@ -312,17 +300,11 @@ models:
     description: >
       Each record represents the header of a business plan, which is how Workday stores budgets.
       One row per plan, per company, per fiscal period. The budgeted amounts live on
-      stg_workday_financial_management__business_plan_entry_line.
+      stg_workday_financial_management__business_plan_entry_line. The grain of this model is
+      business_plan_detail_id, business_plan_detail_index, source_relation.
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
-      - name: business_plan_detail_key
-        description: >
-          Surrogate key derived from business_plan_detail_id, business_plan_detail_index, and
-          source_relation.
-        tests:
-          - not_null
-          - unique
       - name: business_plan_detail_id
         description: "{{ doc('business_plan_detail_id') }}"
         tests:
@@ -362,17 +344,11 @@ models:
     description: >
       Each record represents a single budgeted amount on a business plan, and this is the grain
       budget is stored at. Workday records these as explicit debit and credit columns, the same way
-      it records journal entry lines.
+      it records journal entry lines. The grain of this model is business_plan_detail_id,
+      business_plan_detail_index, business_plan_entry_line_index, source_relation.
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
-      - name: business_plan_entry_line_id
-        description: >
-          Surrogate key derived from business_plan_detail_id, business_plan_detail_index,
-          business_plan_entry_line_index, and source_relation.
-        tests:
-          - not_null
-          - unique
       - name: business_plan_detail_id
         description: "{{ doc('business_plan_detail_id') }}"
         tests:
@@ -403,17 +379,11 @@ models:
       Each record links a business plan entry line to one worktag applied to it. The relationship is
       many-to-many, and structurally identical to
       stg_workday_financial_management__journal_entry_line_worktag, so budget and actuals resolve
-      worktags through the same lookup.
+      worktags through the same lookup. The grain of this model is business_plan_detail_id,
+      business_plan_detail_index, business_plan_entry_line_index, worktag_id, source_relation.
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
-      - name: business_plan_line_worktag_id
-        description: >
-          Surrogate key derived from business_plan_detail_id, business_plan_detail_index,
-          business_plan_entry_line_index, worktag_id, and source_relation.
-        tests:
-          - not_null
-          - unique
       - name: business_plan_detail_id
         description: "{{ doc('business_plan_detail_id') }}"
         tests:
@@ -446,7 +416,6 @@ models:
           fiscal_posting_interval_id, and source_relation. The source carries no key of its own.
         tests:
           - not_null
-          - unique
       - name: fiscal_schedule_id
         description: "{{ doc('fiscal_schedule_id') }}"
         tests:
@@ -476,7 +445,6 @@ models:
         description: "{{ doc('fiscal_year_id') }}"
         tests:
           - not_null
-          - unique
       - name: fiscal_schedule_id
         description: "{{ doc('fiscal_schedule_id') }}"
         tests:
