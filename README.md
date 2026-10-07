@@ -18,7 +18,7 @@ This dbt package transforms data from Fivetran's Workday Financial Management co
   - `>=1.3.0, <3.0.0`
 
 ## What does this dbt package do?
-This package produces a general ledger of your posted journal entries, a monthly summary of balances by account, and a budget vs actuals comparison. It also includes a data dictionary of your source and modeled data through the [dbt docs site](https://fivetran.github.io/dbt_workday_financial_management/).
+This package produces and documents a general ledger of your posted journal entries, a monthly summary of balances by account, and a budget vs actuals comparison.
 
 ### Output schema
 Final output tables are generated in the following target schema:
@@ -133,19 +133,18 @@ vars:
     workday_financial_management__worktag_types: ['Cost_Center_Reference_ID', 'Spend_Category_ID', 'Project_Reference_ID']
 ```
 
+#### Check your worktag types
+The connector reports worktag types using Workday's -ID naming rather than the display names in Workday's worktag documentation, so check your own `worktag` table's `attribute` column before adding a type. ID is needed for the variable input in the package. A type your organization does not use still produces a column; it is simply null.
+
 Each value must match either the `attribute` column of your `worktag` table or the `configuration_code` column of your `custom_worktag` table, so you can name delivered and custom worktags in the same list. Matching is case-insensitive. Each value becomes its own column, named after the value slugified — `Fund_Reference_ID` becomes `fund_reference_id`.
 
 You can check which worktags and custom worktags are available in your dbt project by querying the staging tables:
 ```sql
-select distinct worktag_type from <your_database>.<connector/schema_name>_workday_financial_management.stg_workday_financial_management__worktag
+select distinct attribute from <your_database>.<connector/schema_name>.worktag
 ```
 ```sql
-select distinct configuration_code from <your_database>.<connector/schema_name>_workday_financial_management.stg_workday_financial_management__custom_worktag
+select distinct configuration_code from <your_database>.<connector/schema_name>.custom_worktag
 ```
-
-The connector reports worktag types using Workday's -ID naming rather than the display names in Workday's worktag documentation, so check your own `worktag` table's `attribute` column before adding a type. A type your organization does not use still produces a column; it is simply null.
-
-A journal line can carry multiple worktags of the same type, with different values. The column holds every value, joined by ` | `.
 
 #### Choose the worktag dimensions on budget vs actuals
 `workday_financial_management__budget_vs_actuals` carries worktags too, but they work differently there. On the general ledger a worktag type is a descriptive column. On budget vs actuals it is part of the grain, because the model sums amounts and anything you want to see has to be grouped by.
@@ -159,37 +158,9 @@ vars:
 
 The values work the same way as `workday_financial_management__worktag_types`.
 
-Add types deliberately, because each one costs you comparisons. A budget line and an actual line pair only when they agree on every part of the key. Where one side carries a worktag and the other does not, what would have been a single paired row becomes two unpaired rows instead, reading as unspent budget next to unbudgeted spend. Neither is true. Region is a common example: it is often recorded on actual spend but not on plans.
+Add budget vs. actual types deliberately, because budget line and an actual line pair only when they agree on every part of the key. Where one side carries a worktag and the other does not, what would have been a single paired row becomes two unpaired rows, reading as unspent budget next to unbudgeted spend.
 
-Organization worktags cannot be used because each line may have multiple values, such as a cost center, region, and industry, and the connector does not identify their types. Adding them to the key would create multiple rows for the same amount, while using Organization_Reference_ID or Custom_Organization_Reference_ID causes an error. In observed data, all values included in organization worktags were referenced as single worktag types in additional columns.
-
-#### Overriding worktag resolution
-Two macros decide which worktag types the package uses:
-
-- `resolve_worktag_types()` picks the worktag columns on the general ledger.
-- `resolve_budget_worktag_types()` picks the worktag types in the budget vs actuals grain.
-
-Most users only need the variables above. If you need different logic, you can replace either macro with your own. Both use [`adapter.dispatch`](https://docs.getdbt.com/reference/dbt-jinja-functions/dispatch). To override one, add the following to your root `dbt_project.yml` file:
-
-```yml
-dispatch:
-  - macro_namespace: workday_financial_management
-    search_order: ['<your_project_name>', 'workday_financial_management']
-```
-
-Then create a macro in your project named `<your_project_name>__resolve_worktag_types()` or `<your_project_name>__resolve_budget_worktag_types()`. Your macro must return a list in the same format as the package version: one entry per worktag type, each with a `worktag_type` and a `column_name`. For example:
-
-```sql
-{% macro my_project__resolve_budget_worktag_types() %}
-    {{ return([
-        {'worktag_type': 'Cost_Center_Reference_ID', 'column_name': 'cost_center_reference_id'}
-    ]) }}
-{% endmacro %}
-```
-
-Keep these points in mind:
-- The general ledger macro also includes every budget worktag type, because budget vs actuals reads its actuals from the general ledger. If you override `resolve_worktag_types()`, keep the budget types in its output, or budget vs actuals fails on a missing column.
-- The package version of `resolve_budget_worktag_types()` blocks organization worktags. Your override skips that check. If you return `Organization_Reference_ID` or `Custom_Organization_Reference_ID`, budget vs actuals can split a line's amount across rows and report wrong totals.
+Organization worktags cannot be used because each line can have multiple values, such as a cost center, region, and industry, and the connector does not identify their types, causing fanout. In observed data, all values included in organization worktags were referenced as single worktag types in other columns.
 
 #### Change the build schema
 By default, this package builds the Workday Financial Management staging models within a schema titled (<target_schema> + `_workday_financial_management_staging`) and the final models within (<target_schema> + `_workday_financial_management_reports`) in your destination. If this is not where you would like your data to be written, add the following configuration to your root `dbt_project.yml` file:
