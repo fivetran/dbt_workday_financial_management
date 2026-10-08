@@ -93,7 +93,8 @@ year_number_conflicts as (
         'the declared fiscal year number disagrees with the year its periods end in' as failure_reason,
         fiscal_year.source_relation,
         fiscal_year.fiscal_schedule_id,
-        cast(null as {{ dbt.type_string() }}) as fiscal_period_id,
+        fiscal_year.fiscal_year_name,
+        cast(null as {{ dbt.type_string() }}) as fiscal_posting_interval_id,
         fiscal_year.fiscal_year_name as conflicting_key
     from fiscal_year
 
@@ -113,14 +114,22 @@ overlapping_periods as (
         'two fiscal periods of the same schedule overlap' as failure_reason,
         earlier.source_relation,
         earlier.fiscal_schedule_id,
-        earlier.fiscal_period_id,
-        later.fiscal_period_id as conflicting_key
+        earlier.fiscal_year_name,
+        earlier.fiscal_posting_interval_id,
+        {{ dbt.concat(['later.fiscal_year_name', "' / '", 'later.fiscal_posting_interval_id']) }} as conflicting_key
     from fiscal_period as earlier
 
+    -- Orders the pair on the composite key, so each overlap is reported once.
     inner join fiscal_period as later
         on earlier.fiscal_schedule_id = later.fiscal_schedule_id
         and earlier.source_relation = later.source_relation
-        and earlier.fiscal_period_id < later.fiscal_period_id
+        and (
+            earlier.fiscal_year_name < later.fiscal_year_name
+            or (
+                earlier.fiscal_year_name = later.fiscal_year_name
+                and earlier.fiscal_posting_interval_id < later.fiscal_posting_interval_id
+            )
+        )
         and earlier.fiscal_month_start_date <= later.fiscal_month_end_date
         and later.fiscal_month_start_date <= earlier.fiscal_month_end_date
 
@@ -132,7 +141,8 @@ plan_schedule_conflicts as (
         'a business plan dates against a schedule its company does not report on' as failure_reason,
         business_plan_detail.source_relation,
         fiscal_period.fiscal_schedule_id,
-        fiscal_period.fiscal_period_id,
+        fiscal_period.fiscal_year_name,
+        fiscal_period.fiscal_posting_interval_id,
         business_plan_detail.business_plan_detail_id as conflicting_key
     from business_plan_detail
 

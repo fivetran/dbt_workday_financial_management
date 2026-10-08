@@ -116,7 +116,9 @@ budget_source as (
         business_plan_detail.company_id,
         business_plan_entry_line.ledger_account_id,
         business_plan_detail.currency_id,
-        fiscal_period.fiscal_period_id,
+        fiscal_period.fiscal_schedule_id,
+        fiscal_period.fiscal_year_name,
+        fiscal_period.fiscal_posting_interval_id,
         {%- for worktag in worktag_types %}
         budget_worktags.{{ worktag.column_name }},
         {%- endfor %}
@@ -148,7 +150,7 @@ budget_source as (
 
     where business_plan_entry_line.ledger_account_id is not null
 
-    {{ dbt_utils.group_by(5 + worktag_types | length) }}
+    {{ dbt_utils.group_by(7 + worktag_types | length) }}
 
 ),
 
@@ -159,7 +161,9 @@ actual_source as (
         company_id,
         ledger_account_code as ledger_account_id,
         ledger_currency_id as currency_id,
-        fiscal_period_id,
+        fiscal_schedule_id,
+        fiscal_year_name,
+        fiscal_posting_interval_id,
         {%- for worktag in worktag_types %}
         {{ worktag.column_name }},
         {%- endfor %}
@@ -167,9 +171,9 @@ actual_source as (
     from general_ledger
 
     where ledger_account_code is not null
-        and fiscal_period_id is not null
+        and fiscal_schedule_id is not null
 
-    {{ dbt_utils.group_by(5 + worktag_types | length) }}
+    {{ dbt_utils.group_by(7 + worktag_types | length) }}
 
 ),
 
@@ -180,7 +184,9 @@ source_combined as (
         coalesce(budget_source.company_id, actual_source.company_id) as company_id,
         coalesce(budget_source.ledger_account_id, actual_source.ledger_account_id) as ledger_account_id,
         coalesce(budget_source.currency_id, actual_source.currency_id) as currency_id,
-        coalesce(budget_source.fiscal_period_id, actual_source.fiscal_period_id) as fiscal_period_id,
+        coalesce(budget_source.fiscal_schedule_id, actual_source.fiscal_schedule_id) as fiscal_schedule_id,
+        coalesce(budget_source.fiscal_year_name, actual_source.fiscal_year_name) as fiscal_year_name,
+        coalesce(budget_source.fiscal_posting_interval_id, actual_source.fiscal_posting_interval_id) as fiscal_posting_interval_id,
         {%- for worktag in worktag_types %}
         coalesce(budget_source.{{ worktag.column_name }}, actual_source.{{ worktag.column_name }}) as {{ worktag.column_name }},
         {%- endfor %}
@@ -194,7 +200,9 @@ source_combined as (
         and coalesce(budget_source.company_id, '') = coalesce(actual_source.company_id, '')
         and budget_source.ledger_account_id = actual_source.ledger_account_id
         and coalesce(budget_source.currency_id, '') = coalesce(actual_source.currency_id, '')
-        and budget_source.fiscal_period_id = actual_source.fiscal_period_id
+        and budget_source.fiscal_schedule_id = actual_source.fiscal_schedule_id
+        and budget_source.fiscal_year_name = actual_source.fiscal_year_name
+        and budget_source.fiscal_posting_interval_id = actual_source.fiscal_posting_interval_id
         {%- for worktag in worktag_types %}
         and coalesce(budget_source.{{ worktag.column_name }}, '') = coalesce(actual_source.{{ worktag.column_name }}, '')
         {%- endfor %}
@@ -207,7 +215,9 @@ compared as (
         coalesce(source_combined.source_relation, budget_vs_actuals.source_relation) as source_relation,
         coalesce(source_combined.company_id, budget_vs_actuals.company_id) as company_id,
         coalesce(source_combined.ledger_account_id, budget_vs_actuals.ledger_account_id) as ledger_account_id,
-        coalesce(source_combined.fiscal_period_id, budget_vs_actuals.fiscal_period_id) as fiscal_period_id,
+        coalesce(source_combined.fiscal_schedule_id, budget_vs_actuals.fiscal_schedule_id) as fiscal_schedule_id,
+        coalesce(source_combined.fiscal_year_name, budget_vs_actuals.fiscal_year_name) as fiscal_year_name,
+        coalesce(source_combined.fiscal_posting_interval_id, budget_vs_actuals.fiscal_posting_interval_id) as fiscal_posting_interval_id,
         source_combined.source_budget_amount,
         source_combined.source_actual_amount,
         budget_vs_actuals.budget_amount,
@@ -219,7 +229,9 @@ compared as (
         and coalesce(source_combined.company_id, '') = coalesce(budget_vs_actuals.company_id, '')
         and source_combined.ledger_account_id = budget_vs_actuals.ledger_account_id
         and coalesce(source_combined.currency_id, '') = coalesce(budget_vs_actuals.currency_id, '')
-        and source_combined.fiscal_period_id = budget_vs_actuals.fiscal_period_id
+        and source_combined.fiscal_schedule_id = budget_vs_actuals.fiscal_schedule_id
+        and source_combined.fiscal_year_name = budget_vs_actuals.fiscal_year_name
+        and source_combined.fiscal_posting_interval_id = budget_vs_actuals.fiscal_posting_interval_id
         {%- for worktag in worktag_types %}
         and coalesce(source_combined.{{ worktag.column_name }}, '') = coalesce(budget_vs_actuals.{{ worktag.column_name }}, '')
         {%- endfor %}
@@ -232,7 +244,9 @@ final as (
         source_relation,
         company_id,
         ledger_account_id,
-        fiscal_period_id,
+        fiscal_schedule_id,
+        fiscal_year_name,
+        fiscal_posting_interval_id,
         source_budget_amount,
         budget_amount,
         source_actual_amount,

@@ -46,6 +46,11 @@ models:
         description: "{{ doc('created_at') }}"
       - name: budget_date
         description: "{{ doc('budget_date') }}"
+      - name: fiscal_schedule_id
+        description: >
+          {{ doc('fiscal_schedule_id') }}
+
+          Present only when workday_financial_management__using_fiscal_calendar is enabled.
       - name: fiscal_schedule_code
         description: >
           {{ doc('fiscal_schedule_code') }}
@@ -59,9 +64,9 @@ models:
         description: "{{ doc('fiscal_year_start_date') }}"
       - name: fiscal_year_end_date
         description: "{{ doc('fiscal_year_end_date') }}"
-      - name: fiscal_period_id
+      - name: fiscal_posting_interval_id
         description: >
-          Identifier of the fiscal period the line's accounting date falls in. A line has one
+          Posting interval of the fiscal period the line's accounting date falls in. A line has one
           accounting date, so it lands in exactly one period.
       - name: fiscal_month_name
         description: "{{ doc('fiscal_posting_interval_code') }}"
@@ -251,8 +256,9 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: budget_vs_actuals_id
         description: >
-          Surrogate key derived from company_id, ledger_account_id, currency_id, fiscal_period_id,
-          source_relation, and each configured worktag dimension.
+          Surrogate key derived from company_id, ledger_account_id, currency_id, fiscal_schedule_id,
+          fiscal_year_name, fiscal_posting_interval_id, source_relation, and each configured
+          worktag dimension.
         tests:
           - not_null
           - unique
@@ -305,6 +311,10 @@ models:
           rather than producing a variance across currencies.
       - name: currency_code
         description: "{{ doc('currency_code') }}"
+      - name: fiscal_schedule_id
+        description: "{{ doc('fiscal_schedule_id') }}"
+        tests:
+          - not_null
       - name: fiscal_schedule_code
         description: "{{ doc('fiscal_schedule_code') }}"
       - name: fiscal_year_name
@@ -316,11 +326,8 @@ models:
         description: "{{ doc('fiscal_year_start_date') }}"
       - name: fiscal_year_end_date
         description: "{{ doc('fiscal_year_end_date') }}"
-      - name: fiscal_period_id
-        description: >
-          Identifier of the fiscal period this row reports on.
-        tests:
-          - not_null
+      - name: fiscal_posting_interval_id
+        description: "{{ doc('fiscal_posting_interval_id') }}"
       - name: fiscal_month_name
         description: "{{ doc('fiscal_posting_interval_code') }}"
       - name: fiscal_month_start_date

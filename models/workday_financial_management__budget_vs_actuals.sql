@@ -4,7 +4,7 @@
 {%- set using_worktags = worktag_types | length > 0 -%}
 
 {#- Worktags are part of the grain, so they belong in the surrogate key alongside it. -#}
-{%- set budget_vs_actuals_key = ['paired.company_id', 'paired.ledger_account_id', 'paired.currency_id', 'paired.fiscal_period_id', 'paired.source_relation'] -%}
+{%- set budget_vs_actuals_key = ['paired.company_id', 'paired.ledger_account_id', 'paired.currency_id', 'paired.fiscal_schedule_id', 'paired.fiscal_year_name', 'paired.fiscal_posting_interval_id', 'paired.source_relation'] -%}
 {%- for worktag in worktag_types -%}
     {%- do budget_vs_actuals_key.append('paired.' ~ worktag.column_name) -%}
 {%- endfor %}
@@ -115,7 +115,6 @@ fiscal_period_detail as (
 
     select
         fiscal_period.source_relation,
-        fiscal_period.fiscal_period_id,
         fiscal_period.fiscal_schedule_id,
         fiscal_year.fiscal_schedule_code,
         fiscal_period.fiscal_year_name,
@@ -154,7 +153,9 @@ budget_placed as (
         business_plan_detail.company_id,
         business_plan_entry_line.ledger_account_id,
         business_plan_detail.currency_id,
-        fiscal_period_detail.fiscal_period_id,
+        fiscal_period_detail.fiscal_schedule_id,
+        fiscal_period_detail.fiscal_year_name,
+        fiscal_period_detail.fiscal_posting_interval_id,
         {%- for worktag in worktag_types %}
         bp_worktags.{{ worktag.column_name }},
         {%- endfor %}
@@ -196,13 +197,15 @@ budget as (
         company_id,
         ledger_account_id,
         currency_id,
-        fiscal_period_id,
+        fiscal_schedule_id,
+        fiscal_year_name,
+        fiscal_posting_interval_id,
         {%- for worktag in worktag_types %}
         {{ worktag.column_name }},
         {%- endfor %}
         sum(budget_amount) as budget_amount
     from budget_placed
-    {{ dbt_utils.group_by(5 + worktag_types | length) }}
+    {{ dbt_utils.group_by(7 + worktag_types | length) }}
 
 ),
 
@@ -214,7 +217,9 @@ actuals_placed as (
         general_ledger.company_id,
         general_ledger.ledger_account_code as ledger_account_id,
         general_ledger.ledger_currency_id as currency_id,
-        general_ledger.fiscal_period_id,
+        general_ledger.fiscal_schedule_id,
+        general_ledger.fiscal_year_name,
+        general_ledger.fiscal_posting_interval_id,
         {%- for worktag in worktag_types %}
         general_ledger.{{ worktag.column_name }},
         {%- endfor %}
@@ -223,9 +228,9 @@ actuals_placed as (
 
     -- A line with no company is not filtered here, to match the budget side. In practice the general
     -- ledger finds a line's period through its company's schedule, so these lines have no period and
-    -- the fiscal_period_id filter drops them.
+    -- the fiscal_schedule_id filter drops them.
     where general_ledger.ledger_account_code is not null
-        and general_ledger.fiscal_period_id is not null
+        and general_ledger.fiscal_schedule_id is not null
 
 ),
 
@@ -236,13 +241,15 @@ actuals as (
         company_id,
         ledger_account_id,
         currency_id,
-        fiscal_period_id,
+        fiscal_schedule_id,
+        fiscal_year_name,
+        fiscal_posting_interval_id,
         {%- for worktag in worktag_types %}
         {{ worktag.column_name }},
         {%- endfor %}
         sum(actual_amount) as actual_amount
     from actuals_placed
-    {{ dbt_utils.group_by(5 + worktag_types | length) }}
+    {{ dbt_utils.group_by(7 + worktag_types | length) }}
 
 ),
 
@@ -254,7 +261,9 @@ paired as (
         coalesce(budget.company_id, actuals.company_id) as company_id,
         coalesce(budget.ledger_account_id, actuals.ledger_account_id) as ledger_account_id,
         coalesce(budget.currency_id, actuals.currency_id) as currency_id,
-        coalesce(budget.fiscal_period_id, actuals.fiscal_period_id) as fiscal_period_id,
+        coalesce(budget.fiscal_schedule_id, actuals.fiscal_schedule_id) as fiscal_schedule_id,
+        coalesce(budget.fiscal_year_name, actuals.fiscal_year_name) as fiscal_year_name,
+        coalesce(budget.fiscal_posting_interval_id, actuals.fiscal_posting_interval_id) as fiscal_posting_interval_id,
         {%- for worktag in worktag_types %}
         coalesce(budget.{{ worktag.column_name }}, actuals.{{ worktag.column_name }}) as {{ worktag.column_name }},
         {%- endfor %}
@@ -272,7 +281,9 @@ paired as (
         -- leave a budget and an actual that are both missing one as two unpaired rows sharing one
         -- surrogate key. An untagged budget line pairs with an untagged actual.
         and coalesce(budget.currency_id, '') = coalesce(actuals.currency_id, '')
-        and budget.fiscal_period_id = actuals.fiscal_period_id
+        and budget.fiscal_schedule_id = actuals.fiscal_schedule_id
+        and budget.fiscal_year_name = actuals.fiscal_year_name
+        and budget.fiscal_posting_interval_id = actuals.fiscal_posting_interval_id
         {%- for worktag in worktag_types %}
         and coalesce(budget.{{ worktag.column_name }}, '') = coalesce(actuals.{{ worktag.column_name }}, '')
         {%- endfor %}
@@ -297,11 +308,12 @@ joined as (
         {%- for worktag in worktag_types %}
         paired.{{ worktag.column_name }},
         {%- endfor %}
+        paired.fiscal_schedule_id,
         fiscal_period_detail.fiscal_schedule_code,
-        fiscal_period_detail.fiscal_year_name,
+        paired.fiscal_year_name,
         fiscal_period_detail.fiscal_year_start_date,
         fiscal_period_detail.fiscal_year_end_date,
-        paired.fiscal_period_id,
+        paired.fiscal_posting_interval_id,
         fiscal_period_detail.fiscal_posting_interval_code as fiscal_month_name,
         fiscal_period_detail.fiscal_month_start_date,
         fiscal_period_detail.fiscal_month_end_date,
@@ -325,7 +337,9 @@ joined as (
         and paired.source_relation = currency.source_relation
 
     left join fiscal_period_detail
-        on paired.fiscal_period_id = fiscal_period_detail.fiscal_period_id
+        on paired.fiscal_schedule_id = fiscal_period_detail.fiscal_schedule_id
+        and paired.fiscal_year_name = fiscal_period_detail.fiscal_year_name
+        and paired.fiscal_posting_interval_id = fiscal_period_detail.fiscal_posting_interval_id
         and paired.source_relation = fiscal_period_detail.source_relation
 
 ),

@@ -47,7 +47,6 @@ final as (
         company_schedule.company_id,
         company_schedule.fiscal_schedule_id,
         company_schedule.fiscal_schedule_code,
-        fiscal_period.fiscal_period_id,
         fiscal_period.fiscal_year_name,
         fiscal_period.fiscal_posting_interval_id,
         fiscal_period.fiscal_posting_interval_code,

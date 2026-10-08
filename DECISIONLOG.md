@@ -75,7 +75,7 @@ Most worktag types hold one value per line. For those, the column reads as a nor
 
 Workday stores budgets as business plans, not as journal entries against a budget ledger. A business plan is dated by a fiscal year and a posting interval, not by a calendar month. So `workday_financial_management__budget_vs_actuals` is grained on fiscal periods. We place actual activity on the same periods by finding the period whose dates contain the accounting date.
 
-A posting interval names a position in the year — the third month, say — and repeats every year. That means a period needs a schedule, a year, and an interval to identify it. Joining on the interval alone multiplies your rows by the number of years in your calendar. The source table has no key of its own, so `stg_workday_financial_management__fiscal_period` builds one from all three.
+A posting interval names a position in the year — the third month, say — and repeats every year. That means a period needs a schedule, a year, and an interval to identify it. Joining on the interval alone multiplies your rows by the number of years in your calendar. The source table has no key of its own, so every join to `stg_workday_financial_management__fiscal_period` matches on all three, plus `source_relation`.
 
 ## Project budgets are left out of budget vs actuals
 

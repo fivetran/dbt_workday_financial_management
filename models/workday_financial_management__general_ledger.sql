@@ -111,11 +111,12 @@ joined as (
         journal_entry.created_at,
         journal_entry_line.budget_date,
         {% if using_fiscal_calendar -%}
+        company_fiscal_period.fiscal_schedule_id,
         company_fiscal_period.fiscal_schedule_code,
         company_fiscal_period.fiscal_year_name,
         company_fiscal_period.fiscal_year_start_date,
         company_fiscal_period.fiscal_year_end_date,
-        company_fiscal_period.fiscal_period_id,
+        company_fiscal_period.fiscal_posting_interval_id,
         company_fiscal_period.fiscal_posting_interval_code as fiscal_month_name,
         company_fiscal_period.fiscal_month_start_date,
         company_fiscal_period.fiscal_month_end_date,
