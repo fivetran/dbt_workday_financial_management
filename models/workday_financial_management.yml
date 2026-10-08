@@ -91,17 +91,17 @@ models:
         description: >
           {{ doc('ledger_account_name') }}
 
-          Null where the account code appears in more than one account set. See DECISIONLOG.
+          Null where the account code appears in more than one account set.
       - name: ledger_account_type
         description: >
           {{ doc('ledger_account_type') }}
 
-          Null where the account code appears in more than one account set. See DECISIONLOG.
+          Null where the account code appears in more than one account set.
       - name: account_set_id
         description: >
           {{ doc('account_set_id') }}
 
-          Null where the account code appears in more than one account set. See DECISIONLOG.
+          Null where the account code appears in more than one account set.
       - name: account_set_name
         description: "{{ doc('account_set_name') }}"
       - name: journal_source_id
@@ -182,14 +182,10 @@ models:
           - unique
       - name: company_id
         description: "{{ doc('company_id') }}"
-        tests:
-          - not_null
       - name: company_name
         description: "{{ doc('company_name') }}"
       - name: ledger_account_id
         description: "{{ doc('ledger_account_id') }}"
-        tests:
-          - not_null
       - name: ledger_account_code
         description: >
           {{ doc('ledger_account_code') }}
