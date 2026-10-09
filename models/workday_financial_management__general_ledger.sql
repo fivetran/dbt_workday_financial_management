@@ -1,0 +1,222 @@
+{%- set using_fiscal_calendar = var('workday_financial_management__using_fiscal_calendar', False) -%}
+
+{%- set posted_statuses = var('workday_financial_management__posted_statuses', ['POSTED']) -%}
+
+{#- No worktag type is included by default, so the worktag join and columns appear only once you name one in workday_financial_management__worktag_types. -#}
+{%- set worktag_types = workday_financial_management.resolve_worktag_types() -%}
+
+{%- set using_worktags = worktag_types | length > 0 %}
+
+-- One row per journal entry line, per source relation.
+
+with journal_entry_line as (
+
+    select *
+    from {{ ref('stg_workday_financial_management__journal_entry_line') }}
+
+),
+
+-- Only posted journal entries reach the general ledger. 
+
+journal_entry as (
+
+    select *
+    from {{ ref('stg_workday_financial_management__journal_entry') }}
+    where journal_entry_status in ({% for status in posted_statuses %}'{{ status }}'{% if not loop.last %}, {% endif %}{% endfor %})
+
+),
+
+company as (
+
+    select *
+    from {{ ref('stg_workday_financial_management__company') }}
+
+),
+
+ledger as (
+
+    select *
+    from {{ ref('stg_workday_financial_management__ledger') }}
+
+),
+
+unambiguous_ledger_account as (
+
+    select *
+    from {{ ref('int_workday_financial_management__ledger_accounts') }}
+
+),
+
+journal_source as (
+
+    select *
+    from {{ ref('stg_workday_financial_management__journal_source') }}
+
+),
+
+currency as (
+
+    select *
+    from {{ ref('stg_workday_financial_management__currency') }}
+
+),
+
+ledger_company as (
+
+    select *
+    from {{ ref('stg_workday_financial_management__company') }}
+
+),
+
+-- Currency joined a second time, to label the ledger_* amounts.
+ledger_currency as (
+
+    select *
+    from {{ ref('stg_workday_financial_management__currency') }}
+
+{% if using_fiscal_calendar %}
+),
+
+-- The fiscal periods of the schedule each company reports on. 
+company_fiscal_period as (
+
+    select *
+    from {{ ref('int_workday_financial_management__fiscal_periods') }}
+{% endif %}
+
+{% if using_worktags %}
+),
+
+pivoted_worktags as (
+
+    select *
+    from {{ ref('int_workday_financial_management__worktags_pivoted') }}
+{% endif %}
+
+),
+
+joined as (
+
+    select
+        journal_entry_line.source_relation,
+        {{ dbt_utils.generate_surrogate_key(['journal_entry_line.journal_entry_id', 'journal_entry_line.journal_entry_line_index', 'journal_entry_line.source_relation']) }} as general_ledger_id,
+        journal_entry_line.journal_entry_id,
+        journal_entry_line.journal_entry_line_index,
+        journal_entry.journal_number,
+        journal_entry.journal_sequence_number,
+        journal_entry.journal_entry_status,
+        journal_entry.book_code,
+        journal_entry.accounting_date,
+        journal_entry.transaction_date,
+        journal_entry.created_at,
+        journal_entry_line.budget_date,
+        {% if using_fiscal_calendar -%}
+        company_fiscal_period.fiscal_schedule_id,
+        company_fiscal_period.fiscal_schedule_code,
+        company_fiscal_period.fiscal_year_name,
+        company_fiscal_period.fiscal_year_start_date,
+        company_fiscal_period.fiscal_year_end_date,
+        company_fiscal_period.fiscal_posting_interval_id,
+        company_fiscal_period.fiscal_posting_interval_code as fiscal_month_name,
+        company_fiscal_period.fiscal_month_start_date,
+        company_fiscal_period.fiscal_month_end_date,
+        {% endif -%}
+        journal_entry.company_id,
+        company.company_name,
+        company.company_code,
+        journal_entry_line.line_company_id,
+        journal_entry.ledger_id,
+        ledger.ledger_code,
+        ledger.ledger_type,
+        journal_entry_line.ledger_account_id,
+        journal_entry_line.ledger_account_code,
+        unambiguous_ledger_account.ledger_account_name,
+        unambiguous_ledger_account.ledger_account_type,
+        unambiguous_ledger_account.account_set_id,
+        journal_entry_line.account_set_name,
+        journal_entry.journal_source_id,
+        journal_source.journal_source_name,
+        journal_entry_line.currency_id,
+        currency.currency_code,
+        ledger_company.currency_id as ledger_currency_id,
+        ledger_currency.currency_code as ledger_currency_code,
+        journal_entry_line.currency_rate,
+        journal_entry_line.debit_amount,
+        journal_entry_line.credit_amount,
+        coalesce(journal_entry_line.debit_amount, 0) - coalesce(journal_entry_line.credit_amount, 0) as net_amount,
+        journal_entry_line.ledger_debit_amount,
+        journal_entry_line.ledger_credit_amount,
+        coalesce(journal_entry_line.ledger_debit_amount, 0) - coalesce(journal_entry_line.ledger_credit_amount, 0) as ledger_net_amount,
+        journal_entry_line.quantity,
+        journal_entry_line.journal_line_number,
+        journal_entry_line.line_order,
+        journal_entry.journal_entry_memo,
+        journal_entry_line.journal_entry_line_memo,
+        journal_entry.external_reference_id,
+        journal_entry_line.exclude_from_spend_report,
+        journal_entry.cancel_reverses_journal_entry_id,
+        journal_entry.cancel_reversed_by_journal_entry_id,
+        journal_entry.functional_reverses_journal_entry_id,
+        journal_entry.functional_reversed_by_journal_entry_id,
+        company.is_debit_credit_reversed,
+        company.is_sign_reversed
+
+        {% if using_worktags %}
+            {% for worktag in worktag_types %}
+                , pivoted_worktags.{{ worktag.column_name }}
+            {% endfor %}
+        {% endif %}
+
+    from journal_entry_line
+
+    inner join journal_entry
+        on journal_entry_line.journal_entry_id = journal_entry.journal_entry_id
+        and journal_entry_line.source_relation = journal_entry.source_relation
+
+    left join company
+        on journal_entry.company_id = company.company_id
+        and journal_entry.source_relation = company.source_relation
+
+    left join ledger
+        on journal_entry.ledger_id = ledger.ledger_id
+        and journal_entry.source_relation = ledger.source_relation
+
+    left join unambiguous_ledger_account
+        on journal_entry_line.ledger_account_code = unambiguous_ledger_account.ledger_account_id
+        and journal_entry_line.source_relation = unambiguous_ledger_account.source_relation
+
+    left join journal_source
+        on journal_entry.journal_source_id = journal_source.journal_source_id
+        and journal_entry.source_relation = journal_source.source_relation
+
+    left join currency
+        on journal_entry_line.currency_id = currency.currency_id
+        and journal_entry_line.source_relation = currency.source_relation
+
+    left join ledger_company
+        on ledger.company_id = ledger_company.company_id
+        and ledger.source_relation = ledger_company.source_relation
+
+    left join ledger_currency
+        on ledger_company.currency_id = ledger_currency.currency_id
+        and ledger_company.source_relation = ledger_currency.source_relation
+
+    {% if using_fiscal_calendar %}
+    left join company_fiscal_period
+        on journal_entry.company_id = company_fiscal_period.company_id
+        and journal_entry.source_relation = company_fiscal_period.source_relation
+        and journal_entry.accounting_date >= company_fiscal_period.fiscal_month_start_date
+        and journal_entry.accounting_date <= company_fiscal_period.fiscal_month_end_date
+    {% endif %}
+
+    {% if using_worktags %}
+    left join pivoted_worktags
+        on journal_entry_line.journal_entry_id = pivoted_worktags.journal_entry_id
+        and journal_entry_line.journal_entry_line_index = pivoted_worktags.journal_entry_line_index
+        and journal_entry_line.source_relation = pivoted_worktags.source_relation
+    {% endif %}
+
+)
+
+select *
+from joined

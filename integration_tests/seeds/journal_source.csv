@@ -1,0 +1,6 @@
+id,journal_source_id,journal_source_name,_fivetran_synced,_fivetran_deleted
+7c8469a8876ba5ef726771a99b95263e,JS-001,Manual Journal,2026-01-15T09:00:00Z,false
+ef5646a566d3aa8b9b66cf6ca5ca0ca4,JS-002,Supplier Invoice,2026-01-15T09:00:00Z,false
+050b7105e0adf3b8f111e9294b8f8dfb,JS-003,Customer Invoice,2026-01-15T09:00:00Z,false
+9afd545939f5cd259f0ad811ab3e0821,JS-004,Payroll,2026-01-15T09:00:00Z,false
+61500d769419df299a27876ac3320d6a,JS-005,Depreciation,2026-01-15T09:00:00Z,false
