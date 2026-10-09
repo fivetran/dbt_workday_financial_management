@@ -175,6 +175,10 @@ models:
       Monthly general ledger rollup. One row per company, ledger account, ledger currency, and
       calendar month, per source relation. Months with no journal activity are still present,
       carrying the last known balance forward.
+
+      There is a known gap in account type classification for this model, see the
+      [DECISIONLOG](https://github.com/fivetran/dbt_workday_financial_management/blob/main/DECISIONLOG.md#we-carry-balances-forward-for-every-account)
+      for more details.
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"

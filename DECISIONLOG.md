@@ -28,11 +28,9 @@ For period totals in transaction currency, roll up `workday_financial_management
 
 ## We carry balances forward for every account
 
-A running balance makes sense for balance sheet accounts. It misleads for income statement accounts, which reset at the start of each fiscal year. Normally you would carry balances forward for the first group only.
+Workday gives a ledger account type but no account class, so we carry balances forward for every account. Our recommendation is to use the `ledger_account_type` which will contain your configured types and you can use the net_change fields for any expense and income account types when generating downstream reports. Be aware that `ledger_account_type` is a free-text, human input field, so spelling and case may not be consistent.
 
-We cannot tell the two apart. Workday gives us a ledger account type but no account class, and account type names vary too much to guess from. So we carry balances forward for every account and tell you plainly.
-
-Use `period_beginning_balance` and `period_ending_balance` only for accounts you know to be balance sheet accounts. `period_net_change` is activity within the month and is safe for any account. We expect to revisit this once the account hierarchy is available.
+Use `period_beginning_balance` and `period_ending_balance` only for accounts you know to be balance sheet accounts. `period_net_change` is activity within the month and is safe for any account.
 
 If further refinements are needed, customers can submit a feature request by clicking the [New Issue button in our package issue page](https://github.com/fivetran/dbt_workday_financial_management/issues).
 
