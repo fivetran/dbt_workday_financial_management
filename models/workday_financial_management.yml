@@ -46,34 +46,6 @@ models:
         description: "{{ doc('created_at') }}"
       - name: budget_date
         description: "{{ doc('budget_date') }}"
-      - name: fiscal_schedule_id
-        description: >
-          {{ doc('fiscal_schedule_id') }}
-
-          Present only when workday_financial_management__using_fiscal_calendar is enabled.
-      - name: fiscal_schedule_code
-        description: >
-          {{ doc('fiscal_schedule_code') }}
-
-          Present only when workday_financial_management__using_fiscal_calendar is enabled.
-      - name: fiscal_year_name
-        description: >
-          Fiscal year the line's accounting date falls in, on the schedule its company reports on.
-          This is not the calendar year for a company on a non-calendar schedule.
-      - name: fiscal_year_start_date
-        description: "{{ doc('fiscal_year_start_date') }}"
-      - name: fiscal_year_end_date
-        description: "{{ doc('fiscal_year_end_date') }}"
-      - name: fiscal_posting_interval_id
-        description: >
-          Posting interval of the fiscal period the line's accounting date falls in. A line has one
-          accounting date, so it lands in exactly one period.
-      - name: fiscal_month_name
-        description: "{{ doc('fiscal_posting_interval_code') }}"
-      - name: fiscal_month_start_date
-        description: "{{ doc('fiscal_month_start_date') }}"
-      - name: fiscal_month_end_date
-        description: "{{ doc('fiscal_month_end_date') }}"
       - name: company_id
         description: "{{ doc('company_id') }}"
       - name: company_name
@@ -302,7 +274,7 @@ models:
         description: >
           {{ doc('ledger_account_name') }}
 
-          Null where the account code appears in more than one account set. See DECISIONLOG.
+          Null where the account code appears in more than one account set.
       - name: ledger_account_type
         description: >
           {{ doc('ledger_account_type') }}

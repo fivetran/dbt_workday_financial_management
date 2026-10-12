@@ -6,7 +6,7 @@ profile: 'integration_tests'
 vars:
   workday_financial_management_schema: workday_financial_management_integration_tests
 
-  workday_financial_management__worktag_types: ['Company_Reference_ID', 'Location_ID', 'Project_ID', 'Campaign', 'Line_of_Business']
+  # workday_financial_management__worktag_types: ['Company_Reference_ID', 'Location_ID', 'Project_ID', 'Campaign', 'Line_of_Business']
 
   workday_financial_management_journal_entry_identifier: "journal_entry"
   workday_financial_management_journal_entry_line_identifier: "journal_entry_line"
@@ -33,7 +33,7 @@ models:
    # +schema: "workday_financial_management_{{ var('directed_schema','dev') }}" ## To be used for validation tests
 
 seeds:
-  +quote_columns: "{{ target.type in ('postgres', 'redshift') or var('fivetran_using_source_casing', false) }}"
+  +quote_columns: "{{ target.type in ('postgres', 'redshift', 'duckdb') or var('fivetran_using_source_casing', false) }}"
   +docs:
     show: False
   workday_financial_management_integration_tests:

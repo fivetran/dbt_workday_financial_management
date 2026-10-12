@@ -12,10 +12,8 @@ models:
       +schema: workday_financial_management_staging
       +materialized: view
       tmp:
-        +schema: workday_financial_management_staging
         +materialized: view
     intermediate:
-      +schema: workday_financial_management_staging
       +materialized: ephemeral
 
 vars:

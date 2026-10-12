@@ -45,7 +45,7 @@ By default, this package materializes the following final tables:
 To use this dbt package, you must have the following:
 
 - At least one Fivetran Workday Financial Management connection syncing data into your destination.
-- A **BigQuery**, **Snowflake**, **Redshift**, **PostgreSQL**, or **Databricks** destination.
+- A **BigQuery**, **Snowflake**, **Redshift**, **PostgreSQL**, **Databricks**, or **DuckDB** destination.
 
 ## How do I use the dbt package?
 You can either add this dbt package in the Fivetran dashboard or import it into your dbt project:
@@ -136,7 +136,9 @@ vars:
 #### Check your worktag types
 The connector reports worktag types using Workday's -ID naming rather than the display names in Workday's worktag documentation, so check your own `worktag` table's `attribute` column before adding a type. ID is needed for the variable input in the package. A type your organization does not use still produces a column; it is simply null.
 
-Each value must match either the `attribute` column of your `worktag` table or the `configuration_code` column of your `custom_worktag` table, so you can name delivered and custom worktags in the same list. Matching is case-insensitive. Each value becomes its own column, named after the value slugified — `Fund_Reference_ID` becomes `fund_reference_id`.
+Each worktag type you list must match an entry in either the `attribute` column of your `worktag` table or the `configuration_code` column of your `custom_worktag` table, so you can name delivered and custom worktags in the same list. Matching is case-insensitive. Each type becomes its own column, named after the type slugified — `Fund_Reference_ID` becomes `fund_reference_id`.
+
+Most worktag types hold one value per line. If a line carries several values of the same type, the column shows all of them, sorted and separated by |, for example Clinical | Northeast. Use a pattern match instead of equality when you filter on one value.
 
 You can check which worktags and custom worktags are available in your dbt project by querying the staging tables:
 ```sql
@@ -156,7 +158,7 @@ vars:
     workday_financial_management__budget_worktag_types: ['Cost_Center_Reference_ID', 'Spend_Category_ID', 'Revenue_Category_ID']
 ```
 
-The values work the same way as `workday_financial_management__worktag_types`.
+The types work the same way as `workday_financial_management__worktag_types`. Each type you name here also becomes a column on `workday_financial_management__general_ledger`, even if you leave it out of `workday_financial_management__worktag_types`. Budget vs actuals reads its actuals from the general ledger, so every budget worktag type needs a matching column there. A type named in both lists produces one column.
 
 Add budget vs. actual types deliberately, because budget line and an actual line pair only when they agree on every part of the key. Where one side carries a worktag and the other does not, what would have been a single paired row becomes two unpaired rows, reading as unspent budget next to unbudgeted spend.
 
@@ -170,8 +172,6 @@ models:
     workday_financial_management:
       +schema: my_new_schema_name # leave blank for just the target_schema
       staging:
-        +schema: my_new_staging_schema_name
-      intermediate:
         +schema: my_new_staging_schema_name
 ```
 

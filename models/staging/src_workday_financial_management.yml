@@ -59,6 +59,8 @@ sources:
             description: "{{ doc('functional_reversed_by_journal_entry_id') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+          - name: _fivetran_deleted
+            description: "{{ doc('fivetran_deleted') }}"
 
       - name: journal_entry_line
         identifier: "{{ var('workday_financial_management_journal_entry_line_identifier', 'journal_entry_line') }}"
@@ -106,6 +108,8 @@ sources:
             description: "{{ doc('exclude_from_spend_report') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+          - name: _fivetran_deleted
+            description: "{{ doc('fivetran_deleted') }}"
 
       - name: journal_entry_line_worktag
         identifier: "{{ var('workday_financial_management_journal_entry_line_worktag_identifier', 'journal_entry_line_worktag') }}"
@@ -122,6 +126,8 @@ sources:
             description: "{{ doc('worktag_id') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+          - name: _fivetran_deleted
+            description: "{{ doc('fivetran_deleted') }}"
 
       - name: worktag
         identifier: "{{ var('workday_financial_management_worktag_identifier', 'worktag') }}"
@@ -140,6 +146,8 @@ sources:
             description: "{{ doc('worktag_value') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+          - name: _fivetran_deleted
+            description: "{{ doc('fivetran_deleted') }}"
 
       - name: custom_worktag
         identifier: "{{ var('workday_financial_management_custom_worktag_identifier', 'custom_worktag') }}"
@@ -159,6 +167,8 @@ sources:
             description: "{{ doc('is_inactive') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+          - name: _fivetran_deleted
+            description: "{{ doc('fivetran_deleted') }}"
 
       - name: ledger
         identifier: "{{ var('workday_financial_management_ledger_identifier', 'ledger') }}"
@@ -176,12 +186,15 @@ sources:
             description: "{{ doc('company_id') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+          - name: _fivetran_deleted
+            description: "{{ doc('fivetran_deleted') }}"
 
       - name: ledger_account
         identifier: "{{ var('workday_financial_management_ledger_account_identifier', 'ledger_account') }}"
         description: >
-          The chart of accounts. One row per ledger account. Note that the account code is not
-          stored here — it is denormalized onto journal_entry_line instead.
+          The chart of accounts. One row per ledger account. The id is the account code, which can
+          repeat across account sets. Journal entry lines reference it through ledger_account_code,
+          not ledger_account_id.
         columns:
           - name: id
             description: "{{ doc('ledger_account_id') }}"
@@ -195,6 +208,8 @@ sources:
             description: "{{ doc('is_retired') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+          - name: _fivetran_deleted
+            description: "{{ doc('fivetran_deleted') }}"
 
       - name: journal_source
         identifier: "{{ var('workday_financial_management_journal_source_identifier', 'journal_source') }}"
@@ -211,6 +226,8 @@ sources:
             description: "{{ doc('journal_source_name') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+          - name: _fivetran_deleted
+            description: "{{ doc('fivetran_deleted') }}"
 
       - name: company
         identifier: "{{ var('workday_financial_management_company_identifier', 'company') }}"
@@ -241,6 +258,8 @@ sources:
             description: "{{ doc('is_sign_reversed') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+          - name: _fivetran_deleted
+            description: "{{ doc('fivetran_deleted') }}"
 
       - name: currency
         identifier: "{{ var('workday_financial_management_currency_identifier', 'currency') }}"
@@ -262,6 +281,8 @@ sources:
             description: "{{ doc('currency_precision') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+          - name: _fivetran_deleted
+            description: "{{ doc('fivetran_deleted') }}"
 
       - name: business_plan_detail
         identifier: "{{ var('workday_financial_management_business_plan_detail_identifier', 'business_plan_detail') }}"
@@ -303,6 +324,8 @@ sources:
             description: "{{ doc('business_plan_memo') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+          - name: _fivetran_deleted
+            description: "{{ doc('fivetran_deleted') }}"
 
       - name: business_plan_entry_line
         identifier: "{{ var('workday_financial_management_business_plan_entry_line_identifier', 'business_plan_entry_line') }}"
@@ -333,6 +356,8 @@ sources:
             description: "{{ doc('business_plan_entry_line_memo') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+          - name: _fivetran_deleted
+            description: "{{ doc('fivetran_deleted') }}"
 
       - name: business_plan_entry_line_worktag
         identifier: "{{ var('workday_financial_management_business_plan_entry_line_worktag_identifier', 'business_plan_entry_line_worktag') }}"
@@ -353,6 +378,8 @@ sources:
             description: "{{ doc('worktag_id') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+          - name: _fivetran_deleted
+            description: "{{ doc('fivetran_deleted') }}"
 
       - name: fiscal_period
         identifier: "{{ var('workday_financial_management_fiscal_period_identifier', 'fiscal_period') }}"
@@ -377,6 +404,8 @@ sources:
             description: "{{ doc('fiscal_month_end_date') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+          - name: _fivetran_deleted
+            description: "{{ doc('fivetran_deleted') }}"
 
       - name: fiscal_year
         identifier: "{{ var('workday_financial_management_fiscal_year_identifier', 'fiscal_year') }}"
@@ -405,3 +434,5 @@ sources:
             description: "{{ doc('fiscal_year_end_date') }}"
           - name: _fivetran_synced
             description: "{{ doc('fivetran_synced') }}"
+          - name: _fivetran_deleted
+            description: "{{ doc('fivetran_deleted') }}"

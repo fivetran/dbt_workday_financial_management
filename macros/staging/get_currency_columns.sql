@@ -4,13 +4,9 @@
     {"name": "_fivetran_deleted", "datatype": "boolean"},
     {"name": "_fivetran_synced", "datatype": dbt.type_timestamp()},
     {"name": "currency_code", "datatype": dbt.type_string()},
-    {"name": "delivered_currency_precision", "datatype": dbt.type_float()},
     {"name": "description", "datatype": dbt.type_string()},
     {"name": "id", "datatype": dbt.type_string()},
-    {"name": "is_precision_overridden", "datatype": "boolean"},
     {"name": "numeric_code", "datatype": dbt.type_string()},
-    {"name": "override_currency_precision", "datatype": dbt.type_float()},
-    {"name": "retired", "datatype": "boolean"},
     {"name": "symbol", "datatype": dbt.type_string()}
 ] %}
 

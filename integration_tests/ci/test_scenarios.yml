@@ -10,6 +10,7 @@ schema_variable_name: "workday_financial_management_schema"
 
 include_databricks_sql: false
 include_sqlserver: false
+include_duckdb: true
 include_dbt_compile: true
 
 test_scenarios:
@@ -38,7 +39,7 @@ test_scenarios:
 
   # Seed data carries one UNPOSTED entry alongside 169 POSTED ones, so widening this actually
   # changes the general ledger's row count under CI.
-  - name: "Posted statuses widened"
+  - name: "Posted and unposted statuses"
     vars:
       workday_financial_management__posted_statuses: ['POSTED', 'UNPOSTED']
     include_incremental: false

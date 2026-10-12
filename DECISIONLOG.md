@@ -1,6 +1,9 @@
+# Decision Log
+In creating this package, which is meant for a wide range of use cases, we had to take opinionated stances on a few different questions we came across during development. We've consolidated significant choices we made here, and will continue to update as the package evolves.
+
 ## Only posted journal entries reach the end models
 
-Workday keeps every journal entry in one table, whatever happened to it. Posted entries sit alongside canceled ones, entries that hit an error, pro-forma entries, and entries nobody ever posted. Both end models include only entries with a status of `POSTED`.
+Workday keeps every journal entry in one table, whatever happened to it. Posted entries sit alongside canceled ones, entries that hit an error, pro-forma entries, and entries nobody ever posted. Both the General Ledger and General Ledger by Period models include only entries with a status of `POSTED`.
 
 To see what was canceled or errored, use the staging models. `stg_workday_financial_management__journal_entry` and `stg_workday_financial_management__journal_entry_line` are unfiltered and keep `journal_entry_status`.
 
@@ -34,14 +37,6 @@ Use `period_beginning_balance` and `period_ending_balance` only for accounts you
 
 If further refinements are needed, customers can submit a feature request by clicking the [New Issue button in our package issue page](https://github.com/fivetran/dbt_workday_financial_management/issues).
 
-## `net_amount` is debit minus credit, and negative amounts are normal
-
-Workday lets each company choose how it records reversals. "Reverse Debit/Credit" moves the amount to the opposite column. "Keep Debit/Credit and Reverse Sign" makes the amount negative where it is. A company uses one or the other, and both show on the company record as `is_debit_credit_reversed` and `is_sign_reversed`.
-
-We calculate `net_amount` as `debit_amount - credit_amount` either way. The answer is the same under both settings: a debit of 100 reversed as a credit of 100, and a debit of -100, both net to zero.
-
-What this means for you: `debit_amount` and `credit_amount` are genuinely negative at companies that reverse signs. Do not wrap them in `abs()` and do not filter them out, or you drop real reversals. Every general ledger row carries both company flags, so you can tell which convention produced it.
-
 ## You choose which worktags become columns
 
 Every Workday tenant sets up its own worktag types, and there can be many of them. We cannot tell which ones matter to you, so we do not pick any.
@@ -73,7 +68,7 @@ Most worktag types hold one value per line. For those, the column reads as a nor
 
 Workday stores budgets as business plans, not as journal entries against a budget ledger. A business plan is dated by a fiscal year and a posting interval, not by a calendar month. So `workday_financial_management__budget_vs_actuals` is grained on fiscal periods. We place actual activity on the same periods by finding the period whose dates contain the accounting date.
 
-A posting interval names a position in the year — the third month, say — and repeats every year. That means a period needs a schedule, a year, and an interval to identify it. Joining on the interval alone multiplies your rows by the number of years in your calendar. The source table has no key of its own, so every join to `stg_workday_financial_management__fiscal_period` matches on all three, plus `source_relation`.
+A posting interval names a position in the year, the third month for example, and repeats every year, so a period needs a schedule, a year and an interval to identify it. Joining on the interval alone multiplies your rows by the number of years. Where we join fiscal years to periods, we match on schedule, year and source_relation. A business plan carries no schedule, so we place it on a period using its interval and its plan year.
 
 ## Project budgets are left out of budget vs actuals
 
@@ -95,29 +90,19 @@ So `workday_financial_management__budget_vs_actuals` keeps them. Their `company_
 
 The bucket holds budget only. The general ledger places a journal line on a fiscal period through its company's schedule, so a line with no company has no period and never reaches this model. Read unassigned rows as budget totals, not as a variance.
 
-The `not_null` test on `company_id` warns instead of failing, so you can see how much budget has no company. A plan also needs a fiscal year that matches its plan year. A plan with no company and no matching year is still left out.
-
 ## On budget vs actuals, a worktag is part of the key
 
 Worktags work differently in the two end models. On the general ledger, a worktag is a label sitting next to a row. On `workday_financial_management__budget_vs_actuals`, it is part of the key.
 
-That is because this model adds amounts up. Anything you want to see on a row has to be something we group by, and anything we group by is part of the grain. There is no way to show a worktag here as a plain label.
-
 Each type you add has a cost, so add them one at a time and check the result. A budget line and an actual line pair up only when they match on every part of the key. Where one side records a worktag and the other does not, a row that would have paired becomes two rows that do not. It reads as unspent budget next to unbudgeted spend, and neither is true.
 
-Some worktag types get recorded far more consistently on actual spend than on plans. Region is a common example. Those are the ones to watch.
-
-`budget_vs_actuals_id` is built from the key, so it includes your worktag columns in the order you listed them. Reordering the list changes the ids, though no row and no amount changes. This package has no incremental models, so a full refresh sorts it out.
+Some worktag types get recorded far more consistently on actual spend than on plans. Region is a common example.
 
 ## Organization worktags cannot be used on budget vs actuals
 
-Put `Organization_Reference_ID` or `Custom_Organization_Reference_ID` in `workday_financial_management__budget_worktag_types` and the run stops with an error. We fail the run rather than drop the type quietly, so you find out at build time instead of wondering about your numbers later.
+Workday lets one line carry several organization worktags at once, and a key needs one value per line. The general ledger joins the values into one cell, but that does not work for a key. `Clinical | Northeast` and `Clinical | Northeast | Retail` are two different keys, so a budget and an actual about the same thing stop pairing. You also could not group or filter on one organization without pulling the string apart.
 
-There are two reasons.
-
-First, Workday lets one line carry several organization worktags at once, and a key needs one value per line. The general ledger joins the values into one cell, but that does not work for a key. `Clinical | Northeast` and `Clinical | Northeast | Retail` are two different keys, so a budget and an actual about the same thing stop pairing. You also could not group or filter on one organization without pulling the string apart.
-
-Second, organization worktags mix several dimensions together. Cost center, region, pay group, and industry all arrive under the same type, and nothing in the connector says which is which. Even with one value per line, the column would not be a single dimension.
+Organization worktags also mix several dimensions together. Cost center, region, pay group, and industry all arrive under the same type, and nothing in the connector says which is which. Even with one value per line, the column would not be a single dimension.
 
 Use `Cost_Center_Reference_ID` or `Region_Reference_ID` instead. They hold the same values, carry one per line, and each is a single dimension. The error message points you to them.
 
