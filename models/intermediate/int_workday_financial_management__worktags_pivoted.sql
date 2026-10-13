@@ -1,9 +1,10 @@
-{{ config(enabled=workday_financial_management.resolve_worktag_types() | length > 0) }}
+{{ config(enabled=workday_financial_management.resolve_journal_line_worktag_types() | length > 0) }}
 
-{%- set worktag_types = workday_financial_management.resolve_worktag_types() %}
+{%- set worktag_types = workday_financial_management.resolve_journal_line_worktag_types() %}
 
 -- One row per journal entry line that carries at least one configured worktag, with one column per configured worktag type.
--- No worktag type is configured by default, so this model is only built once you name one in workday_financial_management__worktag_types.
+-- Pivots the general ledger and budget worktag lists together. Each end model selects only its own list's columns.
+-- No worktag type is configured by default, so this model is only built once you name one in either list.
 
 with journal_entry_line_worktag as (
 

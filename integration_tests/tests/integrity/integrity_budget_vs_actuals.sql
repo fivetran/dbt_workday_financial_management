@@ -107,6 +107,29 @@ budget_worktags as (
     {{ dbt_utils.group_by(4) }}
 
 ),
+
+actual_worktags as (
+
+    select
+        journal_entry_line_worktag.source_relation,
+        journal_entry_line_worktag.journal_entry_id,
+        journal_entry_line_worktag.journal_entry_line_index
+        {%- for worktag in worktag_types %}
+        , {{ dbt.listagg(
+                measure="case when lower(worktag.worktag_type) = '" ~ dbt.escape_single_quotes(worktag.worktag_type | lower) ~ "' then worktag.worktag_value end",
+                delimiter_text="' | '",
+                order_by_clause="order by worktag.worktag_value"
+            ) }} as {{ worktag.column_name }}
+        {%- endfor %}
+    from {{ ref('stg_workday_financial_management__journal_entry_line_worktag') }} as journal_entry_line_worktag
+
+    inner join {{ ref('int_workday_financial_management__worktag_lookup') }} as worktag
+        on journal_entry_line_worktag.worktag_id = worktag.worktag_id
+        and journal_entry_line_worktag.source_relation = worktag.source_relation
+
+    {{ dbt_utils.group_by(3) }}
+
+),
 {%- endif %}
 
 budget_source as (
@@ -157,21 +180,28 @@ budget_source as (
 actual_source as (
 
     select
-        source_relation,
-        company_id,
-        ledger_account_code as ledger_account_id,
-        ledger_currency_id as currency_id,
-        fiscal_schedule_id,
-        fiscal_year_name,
-        fiscal_posting_interval_id,
+        general_ledger.source_relation,
+        general_ledger.company_id,
+        general_ledger.ledger_account_code as ledger_account_id,
+        general_ledger.ledger_currency_id as currency_id,
+        general_ledger.fiscal_schedule_id,
+        general_ledger.fiscal_year_name,
+        general_ledger.fiscal_posting_interval_id,
         {%- for worktag in worktag_types %}
-        {{ worktag.column_name }},
+        actual_worktags.{{ worktag.column_name }},
         {%- endfor %}
-        sum(ledger_net_amount) as source_actual_amount
+        sum(general_ledger.ledger_net_amount) as source_actual_amount
     from general_ledger
+    {%- if using_worktags %}
 
-    where ledger_account_code is not null
-        and fiscal_schedule_id is not null
+    left join actual_worktags
+        on general_ledger.journal_entry_id = actual_worktags.journal_entry_id
+        and general_ledger.journal_entry_line_index = actual_worktags.journal_entry_line_index
+        and general_ledger.source_relation = actual_worktags.source_relation
+    {%- endif %}
+
+    where general_ledger.ledger_account_code is not null
+        and general_ledger.fiscal_schedule_id is not null
 
     {{ dbt_utils.group_by(7 + worktag_types | length) }}
 

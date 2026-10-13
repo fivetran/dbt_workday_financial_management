@@ -37,5 +37,5 @@ supported_vars:
     display_name: "Worktag Types"
   workday_financial_management__budget_worktag_types:
     type: list
-    description: "Worktag types to add to the budget vs actuals grain and the general ledger model. Each type you add splits budget from actuals wherever only one side records it, so add them deliberately. Organization worktag types are not accepted here and fail the run."
+    description: "Worktag types to add to the budget vs actuals grain. Each type you add splits budget from actuals wherever only one side records it, so add them deliberately. Organization worktag types are not accepted here and fail the run."
     display_name: "Budget Worktag Types"

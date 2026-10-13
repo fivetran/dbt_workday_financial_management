@@ -158,7 +158,7 @@ vars:
     workday_financial_management__budget_worktag_types: ['Cost_Center_Reference_ID', 'Spend_Category_ID', 'Revenue_Category_ID']
 ```
 
-The types work the same way as `workday_financial_management__worktag_types`. Each type you name here also becomes a column on `workday_financial_management__general_ledger`, even if you leave it out of `workday_financial_management__worktag_types`. Budget vs actuals reads its actuals from the general ledger, so every budget worktag type needs a matching column there. A type named in both lists produces one column.
+The types work the same way as `workday_financial_management__worktag_types`, but the two lists are independent. A type you name here does not become a column on `workday_financial_management__general_ledger`. To trace a budget vs actuals row back to its journal lines by worktag, add the same type to `workday_financial_management__worktag_types` with the same spelling.
 
 Add budget vs. actual types deliberately, because budget line and an actual line pair only when they agree on every part of the key. Where one side carries a worktag and the other does not, what would have been a single paired row becomes two unpaired rows, reading as unspent budget next to unbudgeted spend.
 

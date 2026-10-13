@@ -11,12 +11,11 @@
     carry meaning is a question only that tenant can answer, so the package adds a column only for
     a type you name. An empty list means the general ledger carries no worktag columns at all.
 
-    Budget worktag types are folded in as well, and deduped. Budget vs actuals takes its actuals
-    side from the general ledger, so a type it keys on has to be a column there. Without this a
-    user who set only the budget list would get a run that fails on a missing column.
+    Budget worktag types are not included. Budget vs actuals reads its worktags from the pivot
+    directly, so the budget list never adds columns to the general ledger.
 -#}
 
-{%- set configured_worktag_types = var('workday_financial_management__worktag_types', []) + workday_financial_management.resolve_budget_worktag_types() | map(attribute='worktag_type') | list -%}
+{%- set configured_worktag_types = var('workday_financial_management__worktag_types', []) -%}
 
 {%- set resolved_worktag_types = [] -%}
 {%- set claimed_column_names = [] -%}

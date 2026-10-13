@@ -33,6 +33,13 @@ bp_worktags as (
     from {{ ref('int_workday_financial_management__bp_worktags') }}
 
 ),
+
+journal_line_worktags as (
+
+    select *
+    from {{ ref('int_workday_financial_management__worktags_pivoted') }}
+
+),
 {%- endif %}
 
 fiscal_period as (
@@ -221,10 +228,17 @@ actuals_placed as (
         general_ledger.fiscal_year_name,
         general_ledger.fiscal_posting_interval_id,
         {%- for worktag in worktag_types %}
-        general_ledger.{{ worktag.column_name }},
+        journal_line_worktags.{{ worktag.column_name }},
         {%- endfor %}
         general_ledger.ledger_net_amount as actual_amount
     from general_ledger
+
+    {% if using_worktags -%}
+    left join journal_line_worktags
+        on general_ledger.journal_entry_id = journal_line_worktags.journal_entry_id
+        and general_ledger.journal_entry_line_index = journal_line_worktags.journal_entry_line_index
+        and general_ledger.source_relation = journal_line_worktags.source_relation
+    {%- endif %}
 
     -- A line with no company is not filtered here, to match the budget side. In practice the general
     -- ledger finds a line's period through its company's schedule, so these lines have no period and

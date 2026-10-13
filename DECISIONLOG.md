@@ -50,7 +50,9 @@ We considered shipping a standard set of types. Any set we picked would be a gue
 
 The worktag tables build either way. `worktag`, `custom_worktag`, and `journal_entry_line_worktag` always have staging models, so you can query a worktag we did not give a column to.
 
-One thing to know: the two lists are connected. Budget vs actuals takes its actual amounts from the general ledger, so any type it uses has to be a column there too. When you add a type to `workday_financial_management__budget_worktag_types`, we add it to the general ledger as well.
+The two lists are independent. Budget vs actuals is disabled by default, so its configuration does not change the general ledger. Budget vs actuals takes its actual amounts from the general ledger, but it reads its worktag values from the journal line worktags directly. A type you add to `workday_financial_management__budget_worktag_types` does not become a general ledger column.
+
+The tradeoff is drill-down. To trace a budget vs actuals row back to its journal lines by worktag, add the same type to `workday_financial_management__worktag_types` as well. Use the same spelling in both lists. Two different spellings that produce the same column name, such as `Cost Center` and `Cost_Center`, raise an error.
 
 If further refinements are needed, customers can submit a feature request by clicking the [New Issue button in our package issue page](https://github.com/fivetran/dbt_workday_financial_management/issues).
 
