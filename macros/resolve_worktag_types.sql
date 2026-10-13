@@ -36,12 +36,14 @@
 
 {%- if include_budget and using_budget_vs_actuals -%}
     {%- for worktag in workday_financial_management.resolve_budget_worktag_types() -%}
+
+        {#-
+            The same type in both lists shares one column. Two different types with the same column
+            name cannot, because one end model would read the values of the other type.
+        -#}
         {%- if worktag.column_name not in claimed_worktag_types -%}
             {%- do claimed_worktag_types.update({worktag.column_name: worktag.worktag_type}) -%}
             {%- do resolved_worktag_types.append(worktag) -%}
-
-        {#- The same type in both lists shares one column. Two different types with the same column
-            name cannot, because one end model would read the other type's values. -#}
         {%- elif claimed_worktag_types[worktag.column_name] | lower != worktag.worktag_type | lower -%}
             {{ exceptions.raise_compiler_error(
                 "workday_financial_management__budget_worktag_types includes '" ~ worktag.worktag_type ~ "' and "
