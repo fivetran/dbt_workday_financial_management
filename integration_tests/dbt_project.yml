@@ -1,10 +1,13 @@
 name: 'workday_financial_management_integration_tests'
-version: '0.1.0'
+version: '0.1.1'
 config-version: 2
 profile: 'integration_tests'
 
 vars:
   workday_financial_management_schema: workday_financial_management_integration_tests
+
+  # workday_financial_management__using_business_plans: true  # @docs-include
+  # workday_financial_management__using_fiscal_calendar: true  # @docs-include
 
   # workday_financial_management__worktag_types: ['Company_Reference_ID', 'Location_ID', 'Project_ID', 'Campaign', 'Line_of_Business']
 
