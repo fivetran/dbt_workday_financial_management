@@ -1,0 +1,20 @@
+id,name,type,account_set_id,retired,_fivetran_synced,_fivetran_deleted
+1000,Cash,Asset,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+1200,Accounts Receivable,Asset,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+1400,Inventory,Asset,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+1500,Equipment,Asset,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+2000,Accounts Payable,Liability,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+2200,Accrued Liabilities,Liability,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+2400,Deferred Revenue,Liability,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+3000,Owner's Equity,Equity,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+4000,Clinical Revenue,Incom,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+4100,Product Revenue,Incom,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+4200,Subscription Revenue,Incom,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+5000,Salaries and Wages,Expense,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+5100,Clinical Supplies,Expense,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+5150,Cost of Goods Sold,Expense,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+5200,Software Subscriptions,Expense,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+5300,Contractor Services,Expense,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+5400,Rent and Facilities,Expense,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+5500,Marketing and Advertising,Expense,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
+5600,Depreciation Expense,Expense,763780b51ea686ce347aee641be71c02,false,2026-01-15T09:00:00Z,false
