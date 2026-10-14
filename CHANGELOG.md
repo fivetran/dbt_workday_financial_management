@@ -1,10 +1,8 @@
 # dbt_workday_financial_management v0.1.0
 
-This is the initial release of the `dbt_workday_financial_management` dbt package.
-
 ## Initial Release
 
-This package models data from Fivetran's [Workday Financial Management connector](https://fivetran.com/docs/connectors/applications/workday-financial-management) and produces the following analytics-ready tables:
+This is the initial release of the `dbt_workday_financial_management` dbt package. This package models data from Fivetran's [Workday Financial Management connector](https://fivetran.com/docs/connectors/applications/workday-financial-management) and produces the following analytics-ready tables:
 
 | Table | Description |
 | :---- | :---- |

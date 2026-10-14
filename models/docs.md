@@ -56,7 +56,7 @@ Sequence number of the journal entry within its ledger and period.
 {% enddocs %}
 
 {% docs journal_entry_status %}
-Processing status of the entry, for example Posted, Draft, or Cancelled.
+Processing status of the entry, for example POSTE, UNPOSTED, DRAFT, or CANCELLED.
 {% enddocs %}
 
 {% docs book_code %}

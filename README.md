@@ -138,7 +138,7 @@ The connector reports worktag types using Workday's -ID naming rather than the d
 
 Each worktag type you list must match an entry in either the `attribute` column of your `worktag` table or the `configuration_code` column of your `custom_worktag` table, so you can name delivered and custom worktags in the same list. Matching is case-insensitive. Each type becomes its own column, named after the type slugified — `Fund_Reference_ID` becomes `fund_reference_id`.
 
-Most worktag types hold one value per line. If a line carries several values of the same type, the column shows all of them, sorted and separated by |, for example Clinical | Northeast. Use a pattern match instead of equality when you filter on one value.
+Most worktag types hold one value per line. If a line carries several values of the same type, the column shows all of them, sorted and separated by `|`, for example `Clinical | Northeast`. Use a pattern match instead of equality when you filter on one value.
 
 You can check which worktags and custom worktags are available in your dbt project by querying the staging tables:
 ```sql
@@ -162,7 +162,7 @@ The types work the same way as `workday_financial_management__worktag_types`, bu
 
 Add budget vs. actual types deliberately, because budget line and an actual line pair only when they agree on every part of the key. Where one side carries a worktag and the other does not, what would have been a single paired row becomes two unpaired rows, reading as unspent budget next to unbudgeted spend.
 
-Organization worktags cannot be used because each line can have multiple values, such as a cost center, region, and industry, and the connector does not identify their types, causing fanout. In observed data, all values included in organization worktags were referenced as single worktag types in other columns.
+Organization worktags cannot be used because one line can carry several values at once, and a key needs one value per line. Combined values form different keys, so `Clinical | Northeast` and `Clinical | Northeast | Retail` do not pair even when they describe the same spend. In observed data, every organization worktag value also appeared under its own single worktag type, so you can use those types instead.
 
 #### Change the build schema
 By default, this package builds the Workday Financial Management staging models within a schema titled (<target_schema> + `_workday_financial_management_staging`) and the final models within (<target_schema> + `_workday_financial_management_reports`) in your destination. If this is not where you would like your data to be written, add the following configuration to your root `dbt_project.yml` file:
@@ -184,7 +184,13 @@ If an individual source table has a different name than expected, add the releva
 vars:
     workday_financial_management_<default_source_table_name>_identifier: your_table_name
 ```
+#### Source casing for case-sensitive destinations
+By default, the package applies case-insensitive comparisons when resolving `source_relation` values. If your destination is case-sensitive and you want downstream transformations to respect the exact casing of your source database and schema names, set the following variable:
 
+```yml
+vars:
+    fivetran_using_source_casing: true
+```
 ### (Optional) Orchestrate your models with Fivetran Transformations for dbt Core™
 <details><summary>Expand for more details</summary>
 
@@ -218,9 +224,6 @@ We highly encourage and welcome contributions to this package. Learn how to cont
 
 #### Contributors
 We thank [everyone](https://github.com/fivetran/dbt_workday_financial_management/graphs/contributors) who has taken the time to contribute. Each PR, bug report, and feature request has made this package better and is truly appreciated.
-
-### Opinionated Decisions
-This package takes opinionated stances on how Workday worktags, fiscal periods, running balances, and reversal conventions are modeled. Review the [DECISIONLOG](https://github.com/fivetran/dbt_workday_financial_management/blob/main/DECISIONLOG.md) before you use the output models — some of these decisions affect how you should read the balance columns and the debit and credit amounts.
 
 <!--section-end-->
 
