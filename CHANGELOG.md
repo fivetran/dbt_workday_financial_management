@@ -1,5 +1,7 @@
 # dbt_workday_financial_management v0.1.1
 
+[PR #4](https://github.com/fivetran/dbt_shopify/pull/4) includes the following updates: 
+
 ## Under the Hood
 - Updates `integration_tests/dbt_project.yml` to ensure that the `workday_financial_management__budget_vs_actuals` model is generated in the docs and picked up by Quickstart.
 
