@@ -111,7 +111,7 @@ vars:
 ```
 
 #### Understand which period each model uses
-`workday_financial_management__general_ledger_by_period` reports by calendar month, while `workday_financial_management__budget_vs_actuals` reports by fiscal period, matching how Workday stores budgets. These periods align for standard fiscal schedules such as May_April, but not for 4-4-5 schedules, where fiscal periods can span multiple calendar months. Therefore, neither model includes the other model’s period columns.
+`workday_financial_management__general_ledger_by_period` reports by calendar month, while `workday_financial_management__budget_vs_actuals` reports by fiscal period, matching how Workday stores budgets. These periods align for standard fiscal schedules such as May_April, but not for 4-4-5 schedules, where fiscal periods can span multiple calendar months. Therefore, neither model includes the other model's period columns.
 
 #### Change which journal entry statuses count as posted
 The output models include only journal entries whose status is `POSTED`. This also applies to the actuals in `workday_financial_management__budget_vs_actuals`. If your Workday tenant uses different status values, add the following configuration to your root `dbt_project.yml` file:
@@ -220,7 +220,7 @@ The Fivetran team maintaining this package only maintains the [latest version](h
 ### Contributions
 A small team of analytics engineers at Fivetran develops these dbt packages. However, the packages are made better by community contributions.
 
-We highly encourage and welcome contributions to this package. Learn how to contribute to a package in dbt's [Contributing to an external dbt package article](https://discourse.getdbt.com/t/contributing-to-a-dbt-package/657).
+We highly encourage and welcome contributions to this package. Learn how to contribute to a package by reading the guidelines in our [CONTRIBUTING.md](https://github.com/fivetran/dbt_workday_financial_management/blob/main/CONTRIBUTING.md) document.
 
 #### Contributors
 We thank [everyone](https://github.com/fivetran/dbt_workday_financial_management/graphs/contributors) who has taken the time to contribute. Each PR, bug report, and feature request has made this package better and is truly appreciated.
