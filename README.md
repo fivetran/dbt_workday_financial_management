@@ -61,7 +61,7 @@ Include the following package version in your `packages.yml` file:
 ```yaml
 packages:
   - package: fivetran/workday_financial_management
-    version: [">=0.2.0", "<0.3.0"] # we recommend using ranges to capture non-breaking changes automatically
+    version: [">=0.3.0", "<0.4.0"] # we recommend using ranges to capture non-breaking changes automatically
 ```
 
 ### Define database and schema variables
