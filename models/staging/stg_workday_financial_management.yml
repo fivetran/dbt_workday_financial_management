@@ -6,6 +6,12 @@ models:
       Each record represents the header of an accounting journal entry, carrying the accounting
       date, status, source system, ledger, and company the entry posts to. Debit and credit amounts
       live on stg_workday_financial_management__journal_entry_line.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - source_relation
+              - journal_entry_id
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -62,6 +68,13 @@ models:
       transactional grain of the general ledger. Workday stores debits and credits as explicit
       columns in both transaction and ledger currency. The grain of this model is
       journal_entry_id, journal_entry_line_index, source_relation.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - source_relation
+              - journal_entry_id
+              - journal_entry_line_index
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -115,6 +128,14 @@ models:
       resolves against either stg_workday_financial_management__worktag or
       stg_workday_financial_management__custom_worktag. The grain of this model is
       journal_entry_id, journal_entry_line_index, worktag_id, source_relation.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - source_relation
+              - journal_entry_id
+              - journal_entry_line_index
+              - worktag_id
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -138,6 +159,13 @@ models:
       Each record represents a worktag, Workday's flexible accounting dimension. A worktag is a
       typed tag such as a cost center, fund, grant, program, or project that you apply to
       transactions to carry dimensional context without dedicated columns.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - source_relation
+              - worktag_id
+              - worktag_type
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -160,6 +188,13 @@ models:
       delivers. configuration_code names the worktag's type, playing the part worktag_type plays
       in stg_workday_financial_management__worktag, and custom_worktag_value carries its value.
       The general ledger reads both dimensions through the same bridge.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - source_relation
+              - custom_worktag_id
+              - worktag_code
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -183,6 +218,12 @@ models:
       Each record represents a ledger, the set of books a journal entry posts to. A company may
       maintain several ledgers, for example an actuals ledger alongside separate budget or
       statistical ledgers.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - source_relation
+              - ledger_id
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -203,6 +244,13 @@ models:
     description: >
       Each record represents a ledger account. The ledger_account_id is the account code, which
       can repeat across account sets.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - source_relation
+              - account_set_id
+              - ledger_account_id
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -225,6 +273,12 @@ models:
     description: >
       Each record represents the originating system or business process that produced a journal
       entry, for example Manual Journal, Supplier Invoice, or Payroll.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - source_relation
+              - journal_source_id
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -244,6 +298,12 @@ models:
       Each record represents a company, the legal entity that journal entries post to. This model
       also carries the accounting sign-convention settings that govern how debits and credits are
       stored.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - source_relation
+              - company_id
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -276,6 +336,12 @@ models:
     description: >
       Each record represents a currency referenced by journal entries and their lines. Workday
       records journal amounts in both a transaction currency and the ledger's functional currency.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - source_relation
+              - currency_id
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -302,6 +368,13 @@ models:
       One row per plan, per company, per fiscal period. The budgeted amounts live on
       stg_workday_financial_management__business_plan_entry_line. The grain of this model is
       business_plan_detail_id, business_plan_detail_index, source_relation.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - source_relation
+              - business_plan_detail_id
+              - business_plan_detail_index
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -346,6 +419,14 @@ models:
       budget is stored at. Workday records these as explicit debit and credit columns, the same way
       it records journal entry lines. The grain of this model is business_plan_detail_id,
       business_plan_detail_index, business_plan_entry_line_index, source_relation.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - source_relation
+              - business_plan_detail_id
+              - business_plan_detail_index
+              - business_plan_entry_line_index
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -381,6 +462,15 @@ models:
       stg_workday_financial_management__journal_entry_line_worktag, so budget and actuals resolve
       worktags through the same lookup. The grain of this model is business_plan_detail_id,
       business_plan_detail_index, business_plan_entry_line_index, worktag_id, source_relation.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - source_relation
+              - business_plan_detail_id
+              - business_plan_detail_index
+              - business_plan_entry_line_index
+              - worktag_id
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -408,6 +498,14 @@ models:
 
       The grain is one row per fiscal_schedule_id, fiscal_year_name, fiscal_posting_interval_id,
       and source_relation. The source has no primary key.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - source_relation
+              - fiscal_schedule_id
+              - fiscal_year_name
+              - fiscal_posting_interval_id
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
@@ -433,6 +531,13 @@ models:
       Each record represents one fiscal year of a fiscal schedule, with its start and end dates.
       Links a company's fiscal_schedule_code to a schedule and gives business plans their fiscal
       year number.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - source_relation
+              - fiscal_schedule_id
+              - fiscal_year_name
     columns:
       - name: source_relation
         description: "{{ doc('source_relation') }}"
