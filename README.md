@@ -15,7 +15,7 @@ This dbt package transforms data from Fivetran's Workday Financial Management co
   - [DAG](https://fivetran.github.io/dbt_workday_financial_management/#!/overview?g_v=1)
   - [Changelog](https://github.com/fivetran/dbt_workday_financial_management/blob/main/CHANGELOG.md)
 - dbt Core™ supported versions
-  - `>=1.3.0, <3.0.0`
+  - `>=1.10.0, <3.0.0`
 
 ## What does this dbt package do?
 This package produces and documents a general ledger of your posted journal entries, a monthly summary of balances by account, and a budget vs actuals comparison.
@@ -61,7 +61,7 @@ Include the following package version in your `packages.yml` file:
 ```yaml
 packages:
   - package: fivetran/workday_financial_management
-    version: [">=0.1.0", "<0.2.0"] # we recommend using ranges to capture non-breaking changes automatically
+    version: [">=0.2.0", "<0.3.0"] # we recommend using ranges to capture non-breaking changes automatically
 ```
 
 ### Define database and schema variables
