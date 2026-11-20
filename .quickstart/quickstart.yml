@@ -1,7 +1,7 @@
 database_key: workday_financial_management_database
 schema_key: workday_financial_management_schema
 
-dbt_versions: ">=1.3.0 <3.0.0"
+dbt_versions: ">=1.10.0 <3.0.0"
 
 table_variables:
   workday_financial_management__using_business_plans:

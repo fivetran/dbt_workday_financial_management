@@ -1,3 +1,11 @@
+# dbt_workday_financial_management v0.2.0
+
+[PR #6](https://github.com/fivetran/dbt_workday_financial_management/pull/6) includes the following updates:
+
+## Feature Update
+- **Breaking change**: Raises the minimum dbt version to 1.10.0.
+- Adds `dbt_utils.unique_combination_of_columns` tests to staging and end models. If a test fails, please [open an issue](https://github.com/fivetran/dbt_workday_financial_management/issues/new/choose).
+
 # dbt_workday_financial_management v0.1.1
 
 [PR #4](https://github.com/fivetran/dbt_shopify/pull/4) includes the following updates: 

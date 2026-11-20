@@ -19,16 +19,16 @@ models:
         description: >
           Surrogate key derived from journal_entry_id, journal_entry_line_index, and
           source_relation.
-        tests:
+        data_tests:
           - not_null
           - unique
       - name: journal_entry_id
         description: "{{ doc('journal_entry_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: journal_entry_line_index
         description: "{{ doc('journal_entry_line_index') }}"
-        tests:
+        data_tests:
           - not_null
       - name: journal_number
         description: "{{ doc('journal_number') }}"
@@ -158,7 +158,7 @@ models:
         description: >
           Surrogate key derived from company_id, ledger_account_id, ledger_currency_id,
           period_first_day, and source_relation.
-        tests:
+        data_tests:
           - not_null
           - unique
       - name: company_id
@@ -195,7 +195,7 @@ models:
         description: First day of the calendar year the period falls in.
       - name: period_first_day
         description: First day of the calendar month this row reports on.
-        tests:
+        data_tests:
           - not_null
       - name: period_last_day
         description: Last day of the calendar month this row reports on.
@@ -235,7 +235,7 @@ models:
           Surrogate key derived from company_id, ledger_account_id, currency_id, fiscal_schedule_id,
           fiscal_year_name, fiscal_posting_interval_id, source_relation, and each configured
           worktag dimension.
-        tests:
+        data_tests:
           - not_null
           - unique
       - name: company_id
@@ -245,7 +245,7 @@ models:
           Null on the unassigned company bucket, which holds budget from business plans that name
           no company. The not_null test warns rather than fails, so you can see how much budget
           lands there.
-        tests:
+        data_tests:
           - not_null:
               config:
                 severity: warn
@@ -268,7 +268,7 @@ models:
           the ledger account dimension is keyed by. Note that the general ledger exposes this same
           value as ledger_account_code, not as its own ledger_account_id, which is a separate
           identifier that resolves to nothing.
-        tests:
+        data_tests:
           - not_null
       - name: ledger_account_name
         description: >
@@ -289,7 +289,7 @@ models:
         description: "{{ doc('currency_code') }}"
       - name: fiscal_schedule_id
         description: "{{ doc('fiscal_schedule_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: fiscal_schedule_code
         description: "{{ doc('fiscal_schedule_code') }}"
