@@ -17,7 +17,7 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: journal_entry_id
         description: "{{ doc('journal_entry_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: company_id
         description: "{{ doc('company_id') }}"
@@ -80,11 +80,11 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: journal_entry_id
         description: "{{ doc('journal_entry_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: journal_entry_line_index
         description: "{{ doc('journal_entry_line_index') }}"
-        tests:
+        data_tests:
           - not_null
       - name: line_order
         description: "{{ doc('line_order') }}"
@@ -141,15 +141,15 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: journal_entry_id
         description: "{{ doc('journal_entry_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: journal_entry_line_index
         description: "{{ doc('journal_entry_line_index') }}"
-        tests:
+        data_tests:
           - not_null
       - name: worktag_id
         description: "{{ doc('worktag_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: _fivetran_synced
         description: "{{ doc('fivetran_synced') }}"
@@ -171,7 +171,7 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: worktag_id
         description: "{{ doc('worktag_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: worktag_type
         description: "{{ doc('worktag_type') }}"
@@ -200,7 +200,7 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: custom_worktag_id
         description: "{{ doc('custom_worktag_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: worktag_code
         description: "{{ doc('worktag_code') }}"
@@ -229,7 +229,7 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: ledger_id
         description: "{{ doc('ledger_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: company_id
         description: "{{ doc('company_id') }}"
@@ -256,7 +256,7 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: ledger_account_id
         description: "{{ doc('ledger_account_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: account_set_id
         description: "{{ doc('account_set_id') }}"
@@ -284,7 +284,7 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: journal_source_id
         description: "{{ doc('journal_source_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: journal_source_reference_id
         description: "{{ doc('journal_source_reference_id') }}"
@@ -309,7 +309,7 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: company_id
         description: "{{ doc('company_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: currency_id
         description: "{{ doc('currency_id') }}"
@@ -347,7 +347,7 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: currency_id
         description: "{{ doc('currency_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: currency_code
         description: "{{ doc('currency_code') }}"
@@ -380,7 +380,7 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: business_plan_detail_id
         description: "{{ doc('business_plan_detail_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: business_plan_detail_index
         description: "{{ doc('business_plan_detail_index') }}"
@@ -432,13 +432,13 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: business_plan_detail_id
         description: "{{ doc('business_plan_detail_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: business_plan_detail_index
         description: "{{ doc('business_plan_detail_index') }}"
       - name: business_plan_entry_line_index
         description: "{{ doc('business_plan_entry_line_index') }}"
-        tests:
+        data_tests:
           - not_null
       - name: line_order
         description: "{{ doc('business_plan_line_order') }}"
@@ -476,17 +476,17 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: business_plan_detail_id
         description: "{{ doc('business_plan_detail_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: business_plan_detail_index
         description: "{{ doc('business_plan_detail_index') }}"
       - name: business_plan_entry_line_index
         description: "{{ doc('business_plan_entry_line_index') }}"
-        tests:
+        data_tests:
           - not_null
       - name: worktag_id
         description: "{{ doc('worktag_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: _fivetran_synced
         description: "{{ doc('fivetran_synced') }}"
@@ -511,7 +511,7 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: fiscal_schedule_id
         description: "{{ doc('fiscal_schedule_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: fiscal_year_name
         description: "{{ doc('fiscal_year_name') }}"
@@ -543,11 +543,11 @@ models:
         description: "{{ doc('source_relation') }}"
       - name: fiscal_year_id
         description: "{{ doc('fiscal_year_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: fiscal_schedule_id
         description: "{{ doc('fiscal_schedule_id') }}"
-        tests:
+        data_tests:
           - not_null
       - name: fiscal_schedule_code
         description: "{{ doc('fiscal_schedule_code') }}"
