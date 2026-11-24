@@ -184,6 +184,7 @@ If an individual source table has a different name than expected, add the releva
 vars:
     workday_financial_management_<default_source_table_name>_identifier: your_table_name
 ```
+
 #### Source casing for case-sensitive destinations
 By default, the package applies case-insensitive comparisons when resolving `source_relation` values. If your destination is case-sensitive and you want downstream transformations to respect the exact casing of your source database and schema names, set the following variable:
 
